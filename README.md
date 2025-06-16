@@ -1,35 +1,48 @@
-# frontend
+# Hows the weather
 
-This template should help get you started developing with Vue 3 in Vite.
+## Project Overview
 
-## Recommended IDE Setup
+This project aims to develop a web application that connects students with tutors, enabling them to search for and schedule tutoring sessions based on their preferences and needs.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Developers
 
-## Customize configuration
+Beatriz Costa: @xbeatriz https://github.com/xbeatriz
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+Isabella Bertucci: @isabellabertucci https://github.com/isabellabertucci
 
-## Project Setup
+Ricardo Augusto @MrRichGamer12 https://github.com/MrRichGamer12
 
-```sh
-npm install
-```
+## 💻 Project Scope – Development Focus
 
-### Compile and Hot-Reload for Development
+This project involves the development of a full-stack web application as part of the **Web PII - Smart Cities** interdisciplinary project. Below are the key programming and technical components involved:
 
-```sh
-npm run dev
-```
+### 🔧 Backend
 
-### Compile and Minify for Production
+- RESTful API to receive and manage sensor data (temperature, humidity, gas).
+- User authentication system with two predefined roles:
+  - **Admin**
+  - **User**
+- Alerts system for abnormal sensor values.
+- Integration with a database containing the full structure and contextual data.
+- API documentation.
+- Backend testing plan and documented evidence of test execution.
 
-```sh
-npm run build
-```
+### 🖥️ Frontend
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+- Web interface to visualize sensor data and alerts in real-time.
+- Login system with role-based access (Admin/User).
+- Responsive design for multi-device compatibility.
 
-```sh
-npm run test:unit
-```
+### 🧪 Testing
+
+- Functional testing of backend endpoints and application features.
+- Documentation of the testing process and results.
+
+### 📁 Repositories & Deployment
+
+- Live deployment of the REST API and the web application.
+
+## Technologies Used
+
+- Frontend: HTML, CSS JavaScript - PWA
+- Backend: MongoDB, ExpressJS, Mongoose
