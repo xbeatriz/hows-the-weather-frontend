@@ -14,10 +14,11 @@
 
     <nav class="sidebar-nav">
       <ul>
-        <li v-for="item in menuItems" :key="item.id" @click="selectMenu(item.id)"
-          :class="{ active: activeMenu === item.id }">
+        <li v-for="item in menuItems" :key="item.id" :class="{ active: activeMenu === item.id }"
+          @click="handleMenuClick(item)">
           <font-awesome-icon :icon="item.icon" /> {{ item.name }}
         </li>
+
       </ul>
     </nav>
 
@@ -59,15 +60,19 @@ export default {
     },
   },
   methods: {
-    selectMenu(menuItem) {
-      this.$emit("menuChange", menuItem);
-    },
-    logout() {
-      this.$emit("logout");
-    },
-    openSettings() {
-      router.push({ name: 'Settings' });
-    },
+     selectMenu(menuItem) {
+    this.$emit("menuChange", menuItem);
+  },
+  logout() {
+    this.$emit("logout");
+  },
+  openSettings() {
+    router.push({ name: 'Settings' });
+  },
+  handleMenuClick(item) {
+  this.selectMenu(item.id); 
+}
+,
   },
   setup() {
     const userStore = useUserStore();
@@ -76,12 +81,14 @@ export default {
     const menuItems = computed(() => {
       const items = [
         { id: "overview", name: "Overview", icon: ["fas", "tachometer-alt"] },
-        { id: "sensors", name: "Sensors", icon: ["fas", "microchip"] },
-        { id: "communities", name: "Communities", icon: ["fas", "city"] },
+        { id: "communities", name: "Community", icon: ["fas", "city"] },
       ];
 
       if (user.role === "admin") {
+        items.pop()
         items.splice(2, 0, { id: "users", name: "Users", icon: ["fas", "users"] });
+        items.push({ id: "sensors", name: "Sensores", icon: ["fas", "microchip"] });
+        items.push({ id: "communities", name: "Communities", icon: ["fas", "city"] });
         items.push({ id: "pendingPosts", name: "Verificar Posts", icon: ["fas", "check-circle"] });
       }
 

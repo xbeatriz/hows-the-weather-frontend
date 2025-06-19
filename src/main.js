@@ -49,13 +49,6 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 
-// **Inicializar userStore com dados do localStorage**
-const userStore = useUserStore(pinia)
-const accessToken = localStorage.getItem('accesstoken')
-const refreshToken = localStorage.getItem('refreshtoken')
-const user = JSON.parse(localStorage.getItem('user'))
 
-if (accessToken && refreshToken && user) {
-  userStore.setUserData(user, accessToken, refreshToken)
-}
 app.mount('#app')
+

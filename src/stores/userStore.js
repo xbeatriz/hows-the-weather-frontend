@@ -22,10 +22,6 @@ export const useUserStore = defineStore('userStore', {
       this.user = user;
       this.accessToken = accessToken;
       this.refreshToken = refreshToken;
-
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
     },
 
     logout() {

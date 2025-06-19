@@ -4,44 +4,89 @@ import { useUserStore } from './userStore'
 export const useCommunityStore = defineStore('community', {
   state: () => ({
     communities: [],
-    userCommunity: null,
+    userCommunity: null,     // dados detalhados da comunidade do user
     communityPosts: [],
+    loading: false,
+    error: null,
   }),
-
   actions: {
     async fetchAllCommunities() {
       try {
-        const userStore = useUserStore()
-        const res = await fetch('http://localhost:3000/api/communities', {
-          headers: {
-            Authorization: `Bearer ${userStore.accessToken}`
-          }
-        })
+    const userStore = useUserStore();
 
-        if (!res.ok) throw new Error('Erro ao buscar comunidades')
+    const resAll = await fetch('http://localhost:3000/api/communities', {
+      headers: { Authorization: `Bearer ${userStore.accessToken}` }
+    });
 
-        const data = await res.json()
-        this.communities = data.data.communities || []  // <-- ajuste aqui
+    if (!resAll.ok) throw new Error('Erro ao buscar comunidades');
 
-        const location = userStore.user?.location
-        this.userCommunity = this.communities.find(c => c.location === location) || null
-      } catch (error) {
-        console.error('Erro ao buscar comunidades:', error)
-      }
+    const dataAll = await resAll.json();
+    this.communities = dataAll?.data?.communities
+  }catch (error) {
+    this.error = error.message || 'Erro desconhecido';
+    return false;
+  }
+    },
+async fetchCommunityByUserLocation() {
+  this.loading = true;
+  this.error = null;
+
+  try {
+    const userStore = useUserStore();
+
+    const resAll = await fetch('http://localhost:3000/api/communities', {
+      headers: { Authorization: `Bearer ${userStore.accessToken}` }
+    });
+
+    if (!resAll.ok) throw new Error('Erro ao buscar comunidades');
+
+    const dataAll = await resAll.json();
+
+    this.communities = Array.isArray(dataAll?.data?.communities)
+      ? dataAll.data.communities
+      : [];
+
+    const userLocation = userStore.user?.location;
+
+    const community = this.communities.find(c => c.location === userLocation);
+
+    if (!community) {
+      this.userCommunity = null;
+      this.communityPosts = [];
+      return false;
     }
+
+    const resDetail = await fetch(`http://localhost:3000/api/communities/${community._id}`, {
+      headers: { Authorization: `Bearer ${userStore.accessToken}` }
+    });
+
+    if (!resDetail.ok) throw new Error('Erro ao buscar dados da comunidade');
+
+    const dataDetail = await resDetail.json();
+
+    this.userCommunity = dataDetail.data || null;
+    this.communityPosts = this.userCommunity?.community_posts || [];
+    return !!this.userCommunity;
+  } catch (error) {
+    this.error = error.message || 'Erro desconhecido';
+    return false;
+  } finally {
+    this.loading = false;
+  }
+}
+
     ,
 
-    async createCommunity(location, token) {
+    async createCommunity(location,member_count) {
       try {
         const userStore = useUserStore()
-
         const res = await fetch('http://localhost:3000/api/communities', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${userStore.accessToken}`
           },
-          body: JSON.stringify({ location })
+          body: JSON.stringify({ location ,member_count})
         })
 
         if (!res.ok) throw new Error('Erro ao criar comunidade')

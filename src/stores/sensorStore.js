@@ -14,7 +14,7 @@ export const useSensorStore = defineStore('sensorStore', {
       this.error = null;
 
       try {
-        const res = await fetch('/api/sensors', {
+        const res = await fetch('http://localhost:3000/api/sensors', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -28,7 +28,8 @@ export const useSensorStore = defineStore('sensorStore', {
         }
 
         const data = await res.json();
-        this.sensors = data;
+        this.sensors = data.data.sensors;
+        console.log('Sensors fetched:', this.sensors);
       } catch (err) {
         this.error = err.message;
       } finally {

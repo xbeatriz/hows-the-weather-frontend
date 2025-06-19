@@ -1,60 +1,100 @@
 <template>
   <div class="home">
-    <!-- Sidebar Component - adjust props and events to match the actual component -->
     <Sidebar :headerText="'Painel de Controlo'" :user="user" :activeMenu="activeMenu" @menuChange="handleMenuChange"
       @logout="handleLogout" />
 
-    <!-- Dashboard Content -->
     <div class="dashboard-content">
-      <div class="welcome-section">
-        <h1>Welcome back, {{ user.name }}!</h1>
-        <p>Here's your weather report for today</p>
-      </div>
-
-      <!-- Weather Card Grid -->
-      <div class="weather-card-grid">
-        <!-- Current Weather Card -->
-        <CurrentWeatherCard :weather="currentWeather" :currentDate="currentDate" />
-
-        <!-- Forecast Card -->
-        <ForecastCard :dailyTemperature="dailyTemperature" :weeklyTemperature="weeklyTemperature" />
-      </div>
-
-      <!-- Metrics Cards -->
-      <div class="metrics-card-grid">
-        <!-- Humidity Card -->
-        <HumidityCard :humidity="currentWeather.humidity" />
-
-        <!-- Air Quality Card -->
-        <AirQualityCard :airQuality="airQuality" :airPollutants="airPollutants" />
-      </div>
-
-      <!-- Additional Weather Data -->
-      <AdditionalDataCard :data="additionalData" :selectedDate="selectedDate" @prev-day="prevDay" @next-day="nextDay" />
+      <component :is="currentComponent" v-bind="componentProps" />
     </div>
   </div>
 </template>
 
 <script>
-// Import components
-import Sidebar from '@/components/dashboard/Sidebar.vue'; // Changed to lowercase if needed
-import CurrentWeatherCard from '@/components/weather/CurrentWeatherCard.vue';
-import ForecastCard from '@/components/weather/ForecastCard.vue';
-import HumidityCard from '@/components/weather/HumidityCard.vue';
-import AirQualityCard from '@/components/weather/AirQualityCard.vue';
-import AdditionalDataCard from '@/components/weather/AdditionalDataCard.vue';
+import Sidebar from '@/components/dashboard/Sidebar.vue';
+import OverviewView from '@/components/dashboard/OverviewUser.vue';
+import Comunity from '@/components/dashboard/Comunity.vue';
 import { useUserStore } from '@/stores/userStore';
-import{computed} from 'vue';
+import { useCommunityStore } from '@/stores/comunityStore';
+import { computed, onMounted, ref, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 
 export default {
   name: 'HomeView',
   components: {
     Sidebar,
-    CurrentWeatherCard,
-    ForecastCard,
-    HumidityCard,
-    AirQualityCard,
-    AdditionalDataCard
+    OverviewView,
+    Comunity,
+  },
+  setup() {
+    const userStore = useUserStore();
+    const user = computed(() => userStore.user);
+
+    const communityStore = useCommunityStore();
+    const { userCommunity, communityPosts } = storeToRefs(communityStore);
+
+    const newPost = ref({
+      description: '',
+      tags: '',
+    });
+
+    onMounted(async () => {
+      if (userStore.accessToken) {
+        const success = await communityStore.fetchCommunityByUserLocation();
+        if (!success) {
+          console.warn('⚠️ Nenhuma comunidade foi carregada.');
+        }
+      } else {
+        console.warn('⚠️ Token não disponível. Login necessário.');
+      }
+    });
+
+
+
+    const fetchPosts = async () => {
+      if (!userCommunity._id) return;
+      try {
+        await communityStore.fetchPostsByCommunityId(userCommunity._id);
+      } catch (err) {
+        console.error("Erro ao buscar posts:", err);
+      }
+    };
+
+    const createPost = async () => {
+      try {
+        const body = {
+          description: newPost.value.description,
+          tags: newPost.value.tags.split(',').map(t => t.trim()),
+          sensor_id: user.value.configs?.[0]?.sensorid || null,
+        };
+        await fetch(`http://localhost:3000/api/communities/${userCommunity.value._id}/posts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        newPost.value.description = '';
+        newPost.value.tags = '';
+        await fetchPosts();
+      } catch (err) {
+        console.error("Erro ao criar publicação:", err);
+      }
+    };
+    const activeMenu = ref('overview');
+    watch(
+      () => activeMenu.value,
+      async (newValue) => {
+        if (newValue === 'communities' && userCommunity.value?._id) {
+          await fetchPosts();
+        }
+      }
+    );
+    return {
+      user,
+      community: userCommunity,
+      posts: communityPosts,
+      newPost,
+      createPost,
+      activeMenu,
+    };
   },
   data() {
     return {
@@ -64,23 +104,12 @@ export default {
         temperature: 23,
         condition: 'sunny',
         location: 'Lisbon, Portugal',
-        humidity: 65
+        humidity: 65,
       },
-      user: {
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        role: 'Administrator',
-        avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
-      },
-      activeMenu: 'overview',
-      componentData: {},
       dailyTemperature: [
-        { time: '6AM', temp: 18 },
-        { time: '9AM', temp: 20 },
-        { time: '12PM', temp: 23 },
-        { time: '3PM', temp: 25 },
-        { time: '6PM', temp: 22 },
-        { time: '9PM', temp: 19 }
+        { time: '6AM', temp: 18 }, { time: '9AM', temp: 20 },
+        { time: '12PM', temp: 23 }, { time: '3PM', temp: 25 },
+        { time: '6PM', temp: 22 }, { time: '9PM', temp: 19 },
       ],
       weeklyTemperature: [
         { day: 'Mon', icon: '☀️', high: 25, low: 18 },
@@ -89,53 +118,62 @@ export default {
         { day: 'Thu', icon: '🌧️', high: 20, low: 15 },
         { day: 'Fri', icon: '🌧️', high: 21, low: 16 },
         { day: 'Sat', icon: '⛅', high: 23, low: 17 },
-        { day: 'Sun', icon: '☀️', high: 26, low: 19 }
+        { day: 'Sun', icon: '☀️', high: 26, low: 19 },
       ],
-      airQuality: {
-        value: 45,
-        status: 'Good',
-        color: '#41B06E'
-      },
+      airQuality: { value: 45, status: 'Good', color: '#41B06E' },
       airPollutants: [
         { name: 'PM2.5', value: 12, unit: 'μg/m³', status: 'Good' },
         { name: 'PM10', value: 24, unit: 'μg/m³', status: 'Good' },
         { name: 'O₃', value: 85, unit: 'μg/m³', status: 'Moderate' },
-        { name: 'NO₂', value: 15, unit: 'μg/m³', status: 'Good' }
+        { name: 'NO₂', value: 15, unit: 'μg/m³', status: 'Good' },
       ],
       additionalData: {
         pressure: 1012,
         windSpeed: 12,
         windDirection: 'NE',
         precipitation: 0,
-        uvIndex: 5
-      }
-    }
-  },
-  setup() {
-    const userStore = useUserStore();
-    const user = computed(() => userStore.user);
-    return { user };
+        uvIndex: 5,
+      },
+    };
   },
   methods: {
     handleMenuChange(menuId) {
       this.activeMenu = menuId;
     },
-    toggleSidebar() {
-      this.sidebarOpen = !this.sidebarOpen;
-      document.body.style.overflow = this.sidebarOpen ? 'hidden' : 'auto';
-    },
     handleLogout() {
       useUserStore().logout();
-      this.$router.push("/login");
+      this.$router.push('/login');
     },
     prevDay() {
-      // Just a placeholder in the demo
       console.log('Previous day selected');
     },
     nextDay() {
-      // Just a placeholder in the demo
       console.log('Next day selected');
-    }
+    },
+  },
+  computed: {
+    currentComponent() {
+      switch (this.activeMenu) {
+        case 'communities':
+          return this.community && this.community._id ? Comunity : 'DivEmpty'
+        default:
+          return OverviewView;
+      }
+    },
+    componentProps() {
+      switch (this.activeMenu) {
+        case 'communities':
+          return {
+            community: this.community,
+            posts: this.posts,
+            newPost: this.newPost,
+            onCreatePost: this.createPost
+          };
+        default:
+          return {
+          };
+      }
+    },
   }
 }
 </script>

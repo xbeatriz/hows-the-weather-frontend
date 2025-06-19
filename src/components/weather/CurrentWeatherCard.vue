@@ -2,24 +2,14 @@
   <div class="weather-card current-weather-card">
     <div class="card-header">
       <h3>Current Weather</h3>
-      <span class="location-badge">{{ weatherData.location || 'Loading...' }}</span>
+      <span class="location-badge">{{ weather.location || 'Loading...' }}</span>
     </div>
-    <div v-if="loading" class="card-content loading-container">
-      <div class="loader"></div>
-      <p>Loading weather data...</p>
-    </div>
-    <div v-else-if="error" class="card-content error-container">
-      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-      </svg>
-      <p>{{ error }}</p>
-      <button @click="fetchWeatherData" class="retry-button">Retry</button>
-    </div>
-    <div v-else class="card-content">
-      <div class="weather-icon-large" :class="weatherData.condition">
-        <svg v-if="weatherData.condition === 'sunny'" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+    <div class="card-content">
+      <div class="weather-icon-large" :class="weather.condition">
+        <svg v-if="weather.condition === 'sunny'" xmlns="http://www.w3.org/2000/svg" width="64" height="64"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
           <circle cx="12" cy="12" r="5"></circle>
           <line x1="12" y1="1" x2="12" y2="3"></line>
           <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -30,16 +20,21 @@
           <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
           <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
         </svg>
-        <svg v-else-if="weatherData.condition === 'cloudy'" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg v-else-if="weather.condition === 'cloudy'" xmlns="http://www.w3.org/2000/svg" width="64" height="64"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
           <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
         </svg>
-        <svg v-else-if="weatherData.condition === 'rainy'" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg v-else-if="weather.condition === 'rainy'" xmlns="http://www.w3.org/2000/svg" width="64" height="64"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
           <line x1="16" y1="13" x2="16" y2="21"></line>
           <line x1="8" y1="13" x2="8" y2="21"></line>
           <line x1="12" y1="15" x2="12" y2="23"></line>
           <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"></path>
         </svg>
-        <svg v-else xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg v-else xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 2v2"></path>
           <path d="M12 20v2"></path>
           <path d="m4.93 4.93 1.41 1.41"></path>
@@ -52,53 +47,36 @@
           <path d="M12 10v4"></path>
         </svg>
       </div>
+
       <div class="temperature-display">
-        <span class="temperature-value">{{ weatherData.temperature }}°</span>
+        <span class="temperature-value">{{ weather.temperature }}°</span>
         <span class="temperature-unit">C</span>
       </div>
-      <div class="weather-status">{{ getWeatherStatus(weatherData.condition) }}</div>
+
+      <div class="weather-status">{{ getWeatherStatus(weather.condition) }}</div>
+
       <div class="date-display">{{ formattedDate }}</div>
     </div>
   </div>
 </template>
 
 <script>
-
 export default {
   name: 'CurrentWeatherCard',
   props: {
-    locationId: {
-      type: [String, Number],
-      default: null
-    },
-    apiUrl: {
-      type: String,
-      default: '/api/weather/current'
-    }
-  },
-  data() {
-    return {
-      weatherData: {
-        location: '',
-        temperature: 0,
-        condition: 'default'
-      },
-      loading: true,
-      error: null,
-      lastUpdated: null
+    weather: {
+      type: Object,
+      required: true,
+      default: () => ({ location: 'Unknown', temperature: 0, condition: 'default' })
     }
   },
   computed: {
     formattedDate() {
-      if (!this.lastUpdated) return '';
-      const date = new Date(this.lastUpdated);
-      return date.toLocaleDateString('en-US', {
+      return new Date().toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+        day: 'numeric'
       });
     }
   },
@@ -111,57 +89,11 @@ export default {
         default: 'Partly cloudy'
       };
       return statuses[condition] || statuses.default;
-    },
-    async fetchWeatherData() {
-      this.loading = true;
-      this.error = null;
-      
-      try {
-        const endpoint = this.locationId ? 
-          `${this.apiUrl}/${this.locationId}` : 
-          this.apiUrl;
-          
-        const response = await fetch(endpoint);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data) {
-          this.weatherData = {
-            location: data.location || 'Unknown',
-            temperature: data.temperature || 0,
-            condition: data.condition || 'default'
-          };
-          this.lastUpdated = new Date();
-        } else {
-          throw new Error('Invalid response from server');
-        }
-      } catch (err) {
-        console.error('Error fetching weather data:', err);
-        this.error = 'Failed to load weather data. Please try again.';
-      } finally {
-        this.loading = false;
-      }
-    }
-  },
-  mounted() {
-    this.fetchWeatherData();
-    // Optional: Set up polling to regularly update weather data
-    this.intervalId = setInterval(() => {
-      this.fetchWeatherData();
-    }, 30 * 60 * 1000); // Update every 30 minutes
-  },
-  beforeUnmount() {
-    // Clear interval when component is destroyed
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
     }
   }
 }
 </script>
+
 
 <style scoped>
 .weather-card {
@@ -281,8 +213,13 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error-container {
