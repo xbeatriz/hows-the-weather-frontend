@@ -206,14 +206,21 @@ body {
 .home.sidebar-active {
   margin-left: 280px;
 }
+.sidebar {
+  width: 250px;
+  min-height: 100vh;
+  background-color: #0f172a;
+  position: relative;
+  flex-shrink: 0;
+}
 
 /* Dashboard Content Styles */
 .dashboard-content {
+  flex: 1;
   padding: 16px;
-  width: 100%;
-  transition: padding 0.3s ease;
   box-sizing: border-box;
 }
+
 
 /* Welcome section */
 .welcome-section {
