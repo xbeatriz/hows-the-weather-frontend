@@ -177,12 +177,21 @@ async function likePost(postId) {
       body: JSON.stringify({ user_id: userId.value })
     });
 
-    if (!res.ok) throw new Error('Erro ao dar like');
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message || "Erro ao dar like.");
+      return;
+    }
+
+    alert(data.message || "Like adicionado com sucesso.");
     await refreshPosts();
   } catch (error) {
-    console.error('Erro ao dar like:', error);
+    console.error("Erro ao dar like:", error);
+    alert("Erro ao dar like. Tente novamente.");
   }
 }
+
 
 onMounted(async () => {
   for (const post of props.posts) {

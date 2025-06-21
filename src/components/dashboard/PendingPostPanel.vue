@@ -24,16 +24,31 @@ export default {
     }
   },
   methods: {
-    async approvePost(post) {
-      const userStore = useUserStore();
-      await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${post.community_id}/posts/${post.post_id}/approve`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${userStore.accessToken}`,
-        },
-      });
-      this.$emit('refresh');
-    },
+async approvePost(post) {
+  const userStore = useUserStore();
+
+  try {
+    const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${post.community_id}/posts/${post.post_id}/approve`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${userStore.accessToken}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message || "Erro ao aprovar post.");
+      return;
+    }
+
+    alert(data.message || "Post aprovado com sucesso.");
+    this.$emit("refresh");
+  } catch (error) {
+    console.error("Erro ao aprovar post:", error);
+    alert("Erro ao aprovar post. Tente novamente.");
+  }
+},
     async rejectPost(post) {
       const userStore = useUserStore();
       await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${post.community_id}/posts/${post.post_id}/reject`, {
