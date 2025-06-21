@@ -56,7 +56,7 @@ const router = createRouter({
     {
       path: '/comunity',
       name: 'Community',
-      component: () => import('@/views/Comunity.vue'),
+      component: () => import('@/components/dashboard/Comunity.vue'),
       meta: { requiresAuth: true }
     },
     {
@@ -75,14 +75,28 @@ router.beforeEach((to, from, next) => {
 
   if (to.matched.length === 0) {
     console.error('Rota não encontrada:', to.path);
-    next('/');
-  } else if (to.meta.requiresAuth && !userStore.accessToken) {
-    console.warn('Acesso negado: precisa de login');
-    next('/login');
-  } else {
-    next();
+    return next('/');
   }
+
+  // Se a rota precisa de autenticação mas não há token, manda para login
+  if (to.meta.requiresAuth && !userStore.accessToken) {
+    console.warn('Acesso negado: precisa de login');
+    return next('/login');
+  }
+
+  // Se o utilizador está logado e tenta ir para login ou signup, redireciona para a home/dashboard
+  if ((to.name === 'login' || to.name === 'signup') && userStore.accessToken) {
+    if (userStore.user?.role === 'admin') {
+      return next('/dashboard');
+    } else {
+      return next('/home');
+    }
+  }
+
+  // Continua normalmente
+  next();
 });
+
 
 
 export default router

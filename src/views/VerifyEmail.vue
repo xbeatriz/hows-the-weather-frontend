@@ -24,7 +24,7 @@ export default {
     const userStore = useUserStore();
 
     try {
-      const response = await fetch(`http://localhost:3000/api/user/verify-email/${token}`);
+      const response = await fetch(`https://hows-the-weather-backend.onrender.com/api/user/verify-email/${token}`);
       const data = await response.json();
 
       if (!response.ok) throw new Error(data.message || 'Erro ao verificar o email.');
@@ -48,6 +48,7 @@ export default {
   }
 };
 </script>
+
 
 
 <style scoped>

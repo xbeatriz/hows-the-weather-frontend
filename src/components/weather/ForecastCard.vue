@@ -1,237 +1,134 @@
 <template>
   <div class="weather-card forecast-card">
     <div class="card-header">
-      <h3>Forecast</h3>
+      <h3>{{ dynamicTitle }}</h3>
       <div class="view-toggle">
         <button :class="{ active: activeView === 'daily' }" @click="activeView = 'daily'">Daily</button>
         <button :class="{ active: activeView === 'weekly' }" @click="activeView = 'weekly'">Weekly</button>
       </div>
     </div>
     <div class="card-content">
-      <div v-if="loading" class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Loading forecast data...</p>
-      </div>
-      <div v-else-if="error" class="error-message">
-        <p>{{ error }}</p>
-        <button @click="fetchForecastData" class="retry-button">Try Again</button>
-      </div>
-      <div v-else>
-        <div v-if="activeView === 'daily'" class="forecast-daily">
-          <div class="time-labels">
-            <div v-for="(hour, index) in dailyForecast" :key="'time-'+index" class="time-label">
-              {{ hour.time }}
-            </div>
-          </div>
-          <div class="chart-container">
-            <svg class="line-chart" viewBox="0 0 600 200">
-              <defs>
-                <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.4" />
-                  <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0" />
-                </linearGradient>
-              </defs>
-              
-              <!-- Temperature area fill -->
-              <path :d="getTempAreaPath(dailyForecast)" fill="url(#gradient)" />
-              
-              <!-- Temperature line -->
-              <path :d="getTempLinePath(dailyForecast)" fill="none" stroke="#0ea5e9" stroke-width="3" />
-              
-              <!-- Temperature points -->
-              <g v-for="(point, index) in getTempPoints(dailyForecast)" :key="'point-'+index">
-                <circle :cx="point.x" :cy="point.y" r="5" fill="#fff" stroke="#0ea5e9" stroke-width="2" />
-                <text :x="point.x" :y="point.y - 10" text-anchor="middle" font-size="12" fill="#334155">{{ dailyForecast[index].temp }}°</text>
-              </g>
-            </svg>
+      <!-- Daily View -->
+      <div v-if="activeView === 'daily'" class="forecast-daily">
+        <div class="time-labels">
+          <div v-for="(hour, index) in dailyForecast" :key="'time-' + index" class="time-label">
+            {{ hour.time }}
           </div>
         </div>
-        <div v-else class="forecast-weekly">
-          <table class="forecast-table">
-            <thead>
-              <tr>
-                <th>Day</th>
-                <th>Condition</th>
-                <th>High</th>
-                <th>Low</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(day, index) in weeklyForecast" :key="'day-'+index">
-                <td>{{ day.day }}</td>
-                <td class="condition-cell">{{ day.icon }}</td>
-                <td class="high-cell">{{ day.high }}°C</td>
-                <td class="low-cell">{{ day.low }}°C</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="chart-container">
+          <svg class="line-chart" viewBox="0 0 600 200">
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.4" />
+                <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <path :d="getTempAreaPath(dailyForecast)" fill="url(#gradient)" />
+            <path :d="getTempLinePath(dailyForecast)" fill="none" stroke="#0ea5e9" stroke-width="3" />
+            <g v-for="(point, index) in getTempPoints(dailyForecast)" :key="'point-' + index">
+              <circle :cx="point.x" :cy="point.y" r="5" fill="#fff" stroke="#0ea5e9" stroke-width="2" />
+              <text :x="point.x" :y="point.y - 10" text-anchor="middle" font-size="12" fill="#334155">
+                {{ dailyForecast[index].temp }}°
+              </text>
+            </g>
+          </svg>
         </div>
+      </div>
+
+      <!-- Weekly View -->
+      <div v-else class="forecast-weekly">
+        <table class="forecast-table">
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th>Condition</th>
+              <th>High</th>
+              <th>Low</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(day, index) in weeklyForecast" :key="'day-' + index">
+              <td>{{ day.day }}</td>
+              <td class="condition-cell">{{ day.icon }}</td>
+              <td class="high-cell">{{ day.high }}°C</td>
+              <td class="low-cell">{{ day.low }}°C</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-//import { fetch } from 'express'; // Import fetch from express
 
+<script>
 export default {
   name: 'ForecastCard',
   props: {
-    location: {
-      type: Object,
-      default: () => ({ lat: null, lon: null, city: null })
+    dailyForecast: {
+      type: Array,
+      default: () => []
+    },
+    weeklyForecast: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
     return {
-      activeView: 'daily',
-      loading: true,
-      error: null,
-      dailyForecast: [],
-      weeklyForecast: []
-    }
-  },
-  computed: {
-    hasLocation() {
-      return this.location.lat && this.location.lon || this.location.city;
-    }
-  },
-  watch: {
-    location: {
-      handler() {
-        if (this.hasLocation) {
-          this.fetchForecastData();
-        }
-      },
-      deep: true,
-      immediate: true
-    }
-  },
-  mounted() {
-    // If location is already available when component mounts
-    if (this.hasLocation) {
-      this.fetchForecastData();
-    }
+      activeView: 'daily', // daily | weekly
+    };
   },
   methods: {
-    async fetchForecastData() {
-      if (!this.hasLocation) return;
-      
-      this.loading = true;
-      this.error = null;
-      
-      try {
-        // Determine whether to use coordinates or city name
-        const params = this.location.city ? 
-          `city=${this.location.city}` : 
-          `lat=${this.location.lat}&lon=${this.location.lon}`;
-
-        // Get daily forecast
-        const dailyResponse = await fetch(`/api/forecast/daily?${params}`);
-        const dailyData = await dailyResponse.json();
-        this.dailyForecast = this.formatDailyForecast(dailyData);
-        
-        // Get weekly forecast
-        const weeklyResponse = await fetch(`/api/forecast/weekly?${params}`);
-        const weeklyData = await weeklyResponse.json();
-        this.weeklyForecast = this.formatWeeklyForecast(weeklyData);
-        
-        this.loading = false;
-      } catch (err) {
-        console.error('Error fetching forecast data:', err);
-        this.error = 'Failed to load forecast data. Please try again.';
-        this.loading = false;
-      }
-    },
-    
-    formatDailyForecast(data) {
-      // Transform API data to match the component's expected format
-      // Adjust this based on your actual API response structure
-      return Array.isArray(data) ? data.map(item => ({
-        time: item.time || item.dt_txt?.substring(11, 16) || '',
-        temp: item.temp || item.main?.temp || 0
-      })) : [];
-    },
-    
-    formatWeeklyForecast(data) {
-      // Transform API data to match the component's expected format
-      // Adjust this based on your actual API response structure
-      return Array.isArray(data) ? data.map(item => ({
-        day: item.day || new Date(item.dt * 1000).toLocaleDateString('en-US', { weekday: 'short' }),
-        icon: item.icon || '☀️', // Default icon if not provided
-        high: item.high || item.main?.temp_max || 0,
-        low: item.low || item.main?.temp_min || 0
-      })) : [];
-    },
-    
     getTempLinePath(data) {
-      if (!data.length) return '';
-      
-      const totalPoints = data.length;
       const width = 600;
       const height = 200;
-      const xStep = width / (totalPoints - 1);
-      
-      let path = '';
-      data.forEach((point, index) => {
-        const x = index * xStep;
+      const xStep = width / Math.max(data.length - 1, 1);
+      return data.reduce((path, point, i) => {
+        if (!point || typeof point.temp !== 'number') return path;
+        const x = i * xStep;
         const y = height - (point.temp * 5);
-        
-        if (index === 0) {
-          path += `M ${x} ${y}`;
-        } else {
-          path += ` L ${x} ${y}`;
-        }
-      });
-      
-      return path;
+        return path + (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
+      }, '');
     },
-    
     getTempAreaPath(data) {
-      if (!data.length) return '';
-      
-      const totalPoints = data.length;
       const width = 600;
       const height = 200;
-      const xStep = width / (totalPoints - 1);
-      
-      let path = '';
-      
-      // Start at the bottom left
-      path += `M 0 ${height}`;
-      
-      // Draw line to the first data point
-      path += ` L 0 ${height - (data[0].temp * 5)}`;
-      
-      // Draw lines through all data points
-      data.forEach((point, index) => {
-        const x = index * xStep;
+      const xStep = width / Math.max(data.length - 1, 1);
+      let path = `M 0 ${height}`;
+      data.forEach((point, i) => {
+        if (!point || typeof point.temp !== 'number') return;
+        const x = i * xStep;
         const y = height - (point.temp * 5);
         path += ` L ${x} ${y}`;
       });
-      
-      // Close the path to the bottom right
       path += ` L ${width} ${height} Z`;
-      
       return path;
     },
-    
     getTempPoints(data) {
-      if (!data.length) return [];
-      
-      const totalPoints = data.length;
       const width = 600;
       const height = 200;
-      const xStep = width / (totalPoints - 1);
-      
-      return data.map((point, index) => ({
-        x: index * xStep,
-        y: height - (point.temp * 5)
-      }));
+      const xStep = width / Math.max(data.length - 1, 1);
+      return data
+        .map((point, i) => {
+          if (!point || typeof point.temp !== 'number') return null;
+          return {
+            x: i * xStep,
+            y: height - (point.temp * 5)
+          };
+        })
+        .filter(Boolean); // remove nulls
+    }
+  },
+  computed: {
+    dynamicTitle() {
+      return this.activeView === 'daily' ? 'Temperaturas diárias' : 'Previsão semanal';
     }
   }
-}
+};
+
 </script>
+
 
 <style scoped>
 .weather-card {
@@ -387,8 +284,13 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 1024px) {

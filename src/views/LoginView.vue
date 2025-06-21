@@ -96,7 +96,7 @@ export default {
       const userStore = useUserStore();
 
       try {
-        const response = await fetch('http://localhost:3000/api/user/login', {
+        const response = await fetch('https://hows-the-weather-backend.onrender.com/api/user/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: this.email, password: this.password })
@@ -111,9 +111,10 @@ export default {
         userStore.setUserData(result.data.user, result.accessToken, result.refreshToken);
 
         if (this.rememberMe) {
-          localStorage.setItem('accesstoken', userStore.accessToken);
-          localStorage.setItem('refreshtoken', userStore.refreshToken);
+          localStorage.setItem('accessToken', userStore.accessToken);
+          localStorage.setItem('refreshToken', userStore.refreshToken);
           localStorage.setItem('user', JSON.stringify(userStore.user));
+
         }
 
         if (userStore.user.role === 'admin') {
@@ -128,9 +129,8 @@ export default {
       } finally {
         this.isLoading = false;
       }
-
-
     }
+
   }
 }
 </script>

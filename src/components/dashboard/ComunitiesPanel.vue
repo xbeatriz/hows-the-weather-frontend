@@ -1,16 +1,17 @@
 <template>
-  <div class="sensors-panel">
+  <div class="communities-panel">
     <div class="panel-actions">
       <div class="search-bar">
-        <input type="text" placeholder="Search communities..." v-model="searchQuery">
+        <input type="text" placeholder="Search communities..." v-model="searchQuery" />
         <i class="fas fa-search"></i>
       </div>
-      <button class="add-btn">
+      <!-- Botão que abre modal externo para criar comunidade -->
+      <button class="add-btn" @click="showCreateModal = true">
         <i class="fas fa-plus"></i> Add New Community
       </button>
     </div>
 
-    <div class="sensors-table">
+    <div class="communities-table">
       <table>
         <thead>
           <tr>
@@ -22,7 +23,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="community in filteredCommunities || []" :key="community._id">
+          <tr v-for="community in filteredCommunities" :key="community._id">
             <td>{{ community._id }}</td>
             <td>{{ community.location }}</td>
             <td>{{ community.members_count }}</td>
@@ -49,34 +50,32 @@
       </div>
     </div>
 
-    <div class="sensor-map">
+    <div class="community-map">
       <h3>Community Locations</h3>
       <div class="map-placeholder">
         <p>Map with community locations would be displayed here</p>
       </div>
     </div>
-    <!-- Modal -->
-    <div v-if="showEditModal" class="modal-overlay">
+
+    <!-- Modal interno para editar número de membros -->
+    <div v-if="showEditModal" class="modal-overlay" @click.self="closeEditModal">
       <div class="modal-content">
-        <h3>Editar Número de Membros</h3>
+        <h3>Edit Members Count</h3>
         <form @submit.prevent="submitEditCommunity">
-          <label for="membersCount">Número de membros</label>
-          <input id="membersCount" type="number" v-model="editedMembersCount" min="0" />
+          <label for="membersCount">Number of Members</label>
+          <input id="membersCount" type="number" v-model.number="editedMembersCount" min="0" required />
           <div class="modal-actions">
-            <button type="submit" class="save-btn">
-              Guardar
-            </button>
-            <button type="button" @click="closeEditModal" class="cancel-btn">
-              Cancelar
-            </button>
+            <button type="submit" class="save-btn">Save</button>
+            <button type="button" class="cancel-btn" @click="closeEditModal">Cancel</button>
           </div>
         </form>
       </div>
     </div>
+
     <!-- Modal de visualização da comunidade -->
     <div v-if="viewCommunityModalOpen" class="modal-overlay" @click.self="closeViewCommunityModal">
       <div class="modal-content">
-        <h3>Detalhes da Comunidade</h3>
+        <h3>Community Details</h3>
         <p><strong>ID:</strong> {{ selectedCommunity._id }}</p>
         <p><strong>Location:</strong> {{ selectedCommunity.location }}</p>
         <p><strong>Members Count:</strong> {{ selectedCommunity.members_count }}</p>
@@ -85,23 +84,29 @@
         <h4>Posts</h4>
         <ul>
           <li v-for="post in selectedCommunity.community_posts" :key="post._id">
-            <p><strong>Descrição:</strong> {{ post.description }}</p>
+            <p><strong>Description:</strong> {{ post.description }}</p>
             <p><strong>Tags:</strong> {{ post.tags?.join(', ') }}</p>
             <p><strong>Status:</strong> {{ post.status }}</p>
+            <button class="delete-post-btn" @click="deletePost(selectedCommunity._id, post._id)">
+              <i class="fas fa-trash-alt"></i> Eliminar Post
+            </button>
             <hr />
           </li>
           <li v-if="!selectedCommunity.community_posts || selectedCommunity.community_posts.length === 0">
-            Nenhum post disponível.
+            No posts available.
           </li>
         </ul>
 
         <div class="modal-actions">
-          <button @click="closeViewCommunityModal" class="cancel-btn">
-            Fechar
-          </button>
+          <button @click="closeViewCommunityModal" class="cancel-btn">Close</button>
         </div>
       </div>
     </div>
+
+    <!-- Modal externo para criar comunidade -->
+    <Modal v-if="showCreateModal" title="Create New Community" @close="showCreateModal = false">
+      <CreateCommunityForm @submitted="onCommunityCreated" @cancel="() => (showCreateModal = false)" />
+    </Modal>
   </div>
 </template>
 
@@ -109,167 +114,144 @@
 import { ref, computed, onMounted } from 'vue'
 import { useCommunityStore } from '@/stores/comunityStore'
 import { useUserStore } from '@/stores/userStore'
-import { useRouter } from 'vue-router'
+import Modal from '@/components//common/Modal.vue'
+import CreateCommunityForm from '@/components/forms/CreateCommunityForm.vue'
+
 
 const communityStore = useCommunityStore()
 const userStore = useUserStore()
-const router = useRouter()
 
-// Estado reativo para comunidades
 const communities = ref([])
-
-// Campo de pesquisa
 const searchQuery = ref('')
 
-// Computed para filtrar as comunidades com base na pesquisa
 const filteredCommunities = computed(() => {
   return communities.value.filter(c =>
     c.location?.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 })
 
-// Mostrar ou ocultar o formulário de criação
-const showCreateForm = ref(false)
-const newLocation = ref('')
+const showCreateModal = ref(false)
 
-// Modal editar membros
+// Edit modal states
 const showEditModal = ref(false)
 const editedCommunityId = ref(null)
 const editedMembersCount = ref(0)
 
-// Modal visualização comunidade
+// View modal states
 const selectedCommunity = ref(null)
 const viewCommunityModalOpen = ref(false)
 
-
-// Garante carregar token do localStorage, caso ainda não esteja no state
 userStore.loadFromStorage()
 
-// Carrega as comunidades ao montar o componente
 onMounted(async () => {
   await communityStore.fetchAllCommunities(userStore.accessToken)
   communities.value = communityStore.communities || []
 })
+const deletePost = async (communityId, postId) => {
+  if (!confirm('Tens a certeza que queres eliminar este post?')) return;
+  try {
+    const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${communityId}/posts/${postId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${userStore.accessToken}`
+      }
+    });
+    if (!res.ok) throw new Error('Erro ao eliminar o post');
 
+    alert('Post eliminado com sucesso!');
+    // Atualiza os dados da comunidade
+    await communityStore.fetchAllCommunities(userStore.accessToken);
+    communities.value = communityStore.communities || [];
+
+    // Atualiza a comunidade selecionada se ainda estiver aberta
+    selectedCommunity.value = communities.value.find(c => c._id === communityId);
+  } catch (err) {
+    alert('Erro: ' + err.message);
+  }
+};
 const viewCommunity = (communityId) => {
-  const community = communities.value.find(c => c._id === communityId);
-
-  if (!community) {
-    console.log('Comunidade não encontrada');
-    return;
-  }
-
-  selectedCommunity.value = community;
-  viewCommunityModalOpen.value = true;
-};
-
+  const community = communities.value.find(c => c._id === communityId)
+  if (!community) return
+  selectedCommunity.value = community
+  viewCommunityModalOpen.value = true
+}
 const closeViewCommunityModal = () => {
-  viewCommunityModalOpen.value = false;
-  selectedCommunity.value = null;
-};
-
-// Cria uma nova comunidade
-const createCommunity = async () => {
-  const success = await communityStore.createCommunity(newLocation.value, userStore.accessToken)
-  if (success) {
-    showCreateForm.value = false
-    newLocation.value = ''
-    communities.value = communityStore.communities || []
-  } else {
-    alert('Erro ao criar comunidade')
-  }
+  viewCommunityModalOpen.value = false
+  selectedCommunity.value = null
 }
 
-
-// Atualiza localização da comunidade usando PATCH /api/communities/:id
-const editCommunity = async (id) => {
-  const newLocation = prompt('Nova localização para esta comunidade:')
-  if (newLocation) {
-    try {
-      const response = await fetch(`http://localhost:3000/api/communities/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${userStore.accessToken}`
-        },
-        body: JSON.stringify({ location: newLocation })
-      })
-      if (!response.ok) throw new Error('Falha ao editar a comunidade')
-
-      alert('Comunidade atualizada com sucesso!')
-      await communityStore.fetchAllCommunities(userStore.accessToken)
-      communities.value = communityStore.communities || []
-    } catch (error) {
-      alert('Erro ao atualizar comunidade: ' + error.message)
-    }
-  }
-}
-
-// Apaga a comunidade com DELETE /api/communities/:id
-const deleteCommunity = async (id) => {
-  if (confirm('Tem certeza que deseja apagar esta comunidade?')) {
-    try {
-      const response = await fetch(`http://localhost:3000/api/communities/${id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${userStore.accessToken}`
-        }
-      })
-      if (!response.ok) throw new Error('Falha ao apagar comunidade')
-
-      communities.value = communities.value.filter(c => c._id !== id)
-      alert('Comunidade apagada com sucesso!')
-    } catch (error) {
-      alert('Erro ao apagar comunidade: ' + error.message)
-    }
-  }
-}
-
-// Abre o modal para editar número de membros
+// Edit modal handlers
 const openEditModal = (community) => {
-  console.log('openEditModal called', community)
   editedCommunityId.value = community._id
   editedMembersCount.value = community.members_count || 0
   showEditModal.value = true
-  console.log('showEditModal:', showEditModal.value) // Deve ser true aqui
-
 }
-
-
-// Fecha o modal
 const closeEditModal = () => {
   showEditModal.value = false
   editedCommunityId.value = null
   editedMembersCount.value = 0
 }
-
-// Submete PATCH com novo número de membros
 const submitEditCommunity = async () => {
   try {
-    const response = await fetch(`http://localhost:3000/api/communities/${editedCommunityId.value}`, {
+    const response = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${editedCommunityId.value}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userStore.accessToken}`
+        Authorization: `Bearer ${userStore.accessToken}`,
       },
-      body: JSON.stringify({ members_count: editedMembersCount.value })
+      body: JSON.stringify({ members_count: editedMembersCount.value }),
     })
-
-    if (!response.ok) throw new Error('Erro ao atualizar a comunidade')
-
-    alert('Número de membros atualizado com sucesso!')
+    if (!response.ok) throw new Error('Failed to update community')
+    alert('Members count updated successfully!')
     showEditModal.value = false
     await communityStore.fetchAllCommunities(userStore.accessToken)
     communities.value = communityStore.communities || []
   } catch (error) {
-    alert('Erro: ' + error.message)
+    alert('Error: ' + error.message)
   }
+}
+
+// Delete community
+const deleteCommunity = async (id) => {
+  if (!confirm('Are you sure you want to delete this community?')) return
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/communities/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${userStore.accessToken}` },
+    })
+    if (!response.ok) throw new Error('Failed to delete community')
+    communities.value = communities.value.filter(c => c._id !== id)
+    alert('Community deleted successfully!')
+  } catch (error) {
+    alert('Error deleting community: ' + error.message)
+  }
+}
+
+// Evento para quando o formulário de criação emitir "submitted"
+const onCommunityCreated = (newCommunity) => {
+  showCreateModal.value = false
+  communities.value.push(newCommunity)
 }
 </script>
 
+
 <style scoped>
-/* Reutiliza os mesmos estilos do painel de sensores */
-.sensors-panel {
+.delete-post-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.delete-post-btn:hover {
+  background-color: #c0392b;
+}
+
+.communities-panel {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -322,7 +304,7 @@ const submitEditCommunity = async () => {
   background-color: #309659;
 }
 
-.sensors-table {
+.communities-table {
   background-color: white;
   border-radius: 8px;
   overflow: hidden;
@@ -406,14 +388,14 @@ tbody td {
   font-style: italic;
 }
 
-.sensor-map {
+.community-map {
   background-color: white;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.sensor-map h3 {
+.community-map h3 {
   font-size: 16px;
   color: #2c3e50;
   margin: 0 0 15px 0;

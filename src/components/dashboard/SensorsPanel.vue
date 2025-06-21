@@ -5,7 +5,8 @@
         <input type="text" placeholder="Search sensors..." v-model="searchQuery" />
         <i class="fas fa-search"></i>
       </div>
-      <button class="add-btn" @click="openModal()">
+      <!-- Botão que abre modal externo para criar sensor -->
+      <button class="add-btn" @click="showCreateSensor = true">
         <i class="fas fa-plus"></i> Add New Sensor
       </button>
     </div>
@@ -35,12 +36,14 @@
                 {{ sensor.status }}
               </span>
             </td>
-            <td>{{ sensor.last_reading.timestamp ? new Date(sensor.last_reading.timestamp).toLocaleString() : 'N/A' }}</td>
+            <td>{{ sensor.last_reading?.timestamp ? new Date(sensor.last_reading.timestamp).toLocaleString() : 'N/A' }}
+            </td>
             <td>
               <div class="action-buttons">
                 <button class="view-btn" title="View Data" @click="selectSensor(sensor._id)">
                   <i class="fas fa-chart-line"></i>
                 </button>
+                <!-- Botão que abre modal interno para editar -->
                 <button class="edit-btn" title="Edit" @click="openModal(sensor)">
                   <i class="fas fa-edit"></i>
                 </button>
@@ -65,10 +68,10 @@
       </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal interno para edição -->
     <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
       <div class="modal-content">
-        <h3>{{ modalSensor.id ? 'Edit Sensor' : 'Add New Sensor' }}</h3>
+        <h3>{{ modalSensor._id ? 'Edit Sensor' : 'Add New Sensor' }}</h3>
         <form @submit.prevent="submitSensor">
           <label>
             Sensor ID:
@@ -77,28 +80,55 @@
 
           <label>
             Location:
-            <input type="text" v-model="modalSensor.location" required />
-          </label>
-          <label>
-            Type:
-            <input type="text" v-model="modalSensor.type" required />
-          </label>
-          <label>
-            Status:
-            <select v-model="modalSensor.status" required>
-              <option>Online</option>
-              <option>Offline</option>
+            <select v-model="modalSensor.location" required>
+              <option value="" disabled>Selecione sua localização</option>
+              <option value="Lisboa">Lisboa</option>
+              <option value="Porto">Porto</option>
+              <option value="Coimbra">Coimbra</option>
+              <option value="Faro">Faro</option>
+              <option value="Braga">Braga</option>
             </select>
           </label>
 
+          <label>
+            Type:
+            <select v-model="modalSensor.type" required>
+              <option value="" disabled>Selecione um tipo</option>
+              <option value="temperature">Temperature</option>
+              <option value="humidity">Humidity</option>
+              <option value="gas">Gas</option>
+            </select>
+          </label>
+
+          <label>
+            Status:
+            <select v-model="modalSensor.status" required>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </label>
+          <label>Frequência de Atualização:
+            <select v-model="modalSensor.update_frequency" required>
+              <option value="" disabled>Selecione frequência</option>
+              <option value="minutes">Minutes</option>
+              <option value="hours">Hours</option>
+              <option value="daily">Daily</option>
+            </select>
+          </label>
           <div class="modal-actions">
-            <button type="submit" class="save-btn">{{ modalSensor.id ? 'Update' : 'Create' }}</button>
+            <button type="submit" class="save-btn">{{ modalSensor._id ? 'Update' : 'Create' }}</button>
             <button type="button" class="cancel-btn" @click="closeModal">Cancel</button>
           </div>
         </form>
       </div>
     </div>
-    <!-- Modal nova para dados do sensor -->
+
+    <!-- Modal externo para criação -->
+    <Modal v-if="showCreateSensor" title="Criar Novo Sensor" @close="showCreateSensor = false">
+      <CreateSensorForm @submitted="onFormSubmitted" @cancel="() => (showCreateSensor = false)" />
+    </Modal>
+
+    <!-- Modal para visualizar dados do sensor -->
     <div v-if="viewModalOpen" class="modal-overlay" @click.self="closeViewModal">
       <div class="modal-content" style="width: 500px; max-width: 95%;">
         <div class="last-reading">
@@ -139,9 +169,13 @@
 </template>
 
 <script>
+import Modal from '@/components/common/Modal.vue';
+import CreateSensorForm from '@/components/forms/CreateSensorForm.vue';
+import { useUserStore } from '@/stores/userStore';
 
-import { useUserStore } from '@/stores/userStore'; export default {
+export default {
   name: 'SensorsPanel',
+  components: { Modal, CreateSensorForm },
   props: {
     data: {
       type: Object,
@@ -152,25 +186,23 @@ import { useUserStore } from '@/stores/userStore'; export default {
     return {
       searchQuery: '',
       modalOpen: false,
+      showCreateSensor: false,
       modalSensor: {
         _id: '',
         location: '',
         type: '',
-        status: 'Online',
+        status: '',
+        update_frequency: '',
       },
-      selectedSensor: null,
-      isViewModalOpen: false,
-      viewModalOpen: false,
       sensorData: {},
+      viewModalOpen: false,
       userStore: useUserStore(),
     };
   },
   computed: {
     filteredSensors() {
       if (!this.data.sensors) return [];
-
       const searchLower = this.searchQuery.toLowerCase();
-
       return this.data.sensors.filter((sensor) => {
         return (
           String(sensor._id).toLowerCase().includes(searchLower) ||
@@ -180,32 +212,28 @@ import { useUserStore } from '@/stores/userStore'; export default {
       });
     },
     limitedReadings() {
-    if (!this.sensorData.readings) return [];
-    return this.sensorData.readings.slice(-10);
-  },
-  readingKeys() {
-    if (!this.limitedReadings.length) return [];
-    return Object.keys(this.limitedReadings[0]);
-  },
-  lastReadingKeys() {
-    if (!this.sensorData.last_reading) return [];
-    return Object.keys(this.sensorData.last_reading);
-  },
+      if (!this.sensorData.readings) return [];
+      return this.sensorData.readings.slice(-10);
+    },
+    readingKeys() {
+      if (!this.limitedReadings.length) return [];
+      return Object.keys(this.limitedReadings[0]);
+    },
+    lastReadingKeys() {
+      if (!this.sensorData.last_reading) return [];
+      return Object.keys(this.sensorData.last_reading);
+    },
   },
   methods: {
     selectSensor(sensorId) {
-      const sensor = this.data.sensors.find(s => s._id === sensorId);
-
+      const sensor = this.data.sensors.find((s) => s._id === sensorId);
       if (!sensor) {
-        console.log('Sensor não encontrado');
+        ('Sensor não encontrado');
         return;
       }
-
-      this.selectedSensor = sensor;
-      this.sensorData = sensor; // atualizar os dados para o modal
-      this.viewModalOpen = true; // abrir modal
+      this.sensorData = sensor;
+      this.viewModalOpen = true;
     },
-
     closeViewModal() {
       this.viewModalOpen = false;
     },
@@ -217,21 +245,17 @@ import { useUserStore } from '@/stores/userStore'; export default {
       }
       this.modalOpen = true;
     },
-
     closeModal() {
       this.modalOpen = false;
     },
-
     async submitSensor() {
-      const token = this.$store.state.user.accessToken;
+      const token = this.userStore.accessToken;
       const sensorId = this.modalSensor._id;
-
       try {
         let response;
-
         if (sensorId && this.data.sensors.find((s) => s._id === sensorId)) {
           // PATCH (Update)
-          response = await fetch(`http://localhost:3000/api/sensors/${sensorId}`, {
+          response = await fetch(`https://hows-the-weather-backend.onrender.com/api/sensors/${sensorId}`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
@@ -245,7 +269,7 @@ import { useUserStore } from '@/stores/userStore'; export default {
           });
         } else {
           // POST (Create)
-          response = await fetch(`http://localhost:3000/api/sensors`, {
+          response = await fetch(`https://hows-the-weather-backend.onrender.com/api/sensors`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -258,10 +282,8 @@ import { useUserStore } from '@/stores/userStore'; export default {
             }),
           });
         }
-
         if (response.ok) {
           const updatedSensor = await response.json();
-
           if (sensorId && this.data.sensors.find((s) => s._id === sensorId)) {
             const index = this.data.sensors.findIndex((s) => s._id === sensorId);
             if (index !== -1) {
@@ -270,7 +292,6 @@ import { useUserStore } from '@/stores/userStore'; export default {
           } else {
             this.data.sensors.push(updatedSensor);
           }
-
           alert('Sensor salvo com sucesso!');
           this.closeModal();
         } else {
@@ -281,18 +302,16 @@ import { useUserStore } from '@/stores/userStore'; export default {
         alert('Erro: ' + err.message);
       }
     },
-
     async deleteSensor(sensorId) {
       if (confirm('Tem certeza que deseja apagar este sensor?')) {
         try {
-          const response = await fetch(`http://localhost:3000/api/sensors/${sensorId}`, {
+          const response = await fetch(`https://hows-the-weather-backend.onrender.com/api/sensors/${sensorId}`, {
             method: 'DELETE',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${this.$store.state.user.accessToken}`,
+              Authorization: `Bearer ${this.userStore.accessToken}`,
             },
           });
-
           if (response.ok) {
             alert('Sensor apagado com sucesso!');
             this.data.sensors = this.data.sensors.filter((s) => s._id !== sensorId);
@@ -304,7 +323,12 @@ import { useUserStore } from '@/stores/userStore'; export default {
         }
       }
     },
-  }
+    onFormSubmitted(newSensor) {
+      this.showCreateSensor = false;
+      this.data.sensors.push(newSensor);
+      alert('Sensor criado com sucesso!');
+    },
+  },
 };
 </script>
 

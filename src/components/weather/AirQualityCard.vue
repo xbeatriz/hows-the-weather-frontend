@@ -3,7 +3,8 @@
     <div class="card-header">
       <h3>Air Quality</h3>
       <div class="metric-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M8 2v2"></path>
           <path d="M16 2v2"></path>
           <path d="M8 20v2"></path>
@@ -20,51 +21,42 @@
       </div>
     </div>
     <div class="card-content">
-      <div v-if="loading" class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>Loading air quality data...</p>
+      <div class="air-quality-meter">
+        <div class="meter-labels">
+          <span>Good</span>
+          <span>Moderate</span>
+          <span>Unhealthy</span>
+        </div>
+        <div class="meter-bar">
+          <div class="meter-fill" :style="airQualityData.status === 'Poor'
+            ? { width: `${airQualityPercentage}%`, backgroundColor: airQualityData.color }
+            : { width: '0%' }"></div>
+          <div class="meter-marker" :style="{ left: `${airQualityPercentage}%` }"></div>
+        </div>
+
       </div>
-      
-      <div v-else-if="error" class="error-state">
-        <p>{{ error }}</p>
-        <button @click="fetchAirQualityData" class="retry-button">Retry</button>
+      <div class="air-quality-details">
+        <div class="aqi-value">AQI: <strong>{{ airQualityData.value }}</strong></div>
+        <div class="aqi-status" :style="{ color: airQualityData.color }">{{ airQualityData.status }}</div>
       </div>
-      
-      <template v-else>
-        <div class="air-quality-meter">
-          <div class="meter-labels">
-            <span>Good</span>
-            <span>Moderate</span>
-            <span>Unhealthy</span>
-          </div>
-          <div class="meter-bar">
-            <div class="meter-fill" :style="{width: `${airQualityPercentage}%`, backgroundColor: airQualityData.color}"></div>
-            <div class="meter-marker" :style="{left: `${airQualityPercentage}%`}"></div>
-          </div>
-        </div>
-        <div class="air-quality-details">
-          <div class="aqi-value">AQI: <strong>{{ airQualityData.value }}</strong></div>
-          <div class="aqi-status" :style="{color: airQualityData.color}">{{ airQualityData.status }}</div>
-        </div>
-        <div class="pollutants-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Pollutant</th>
-                <th>Value</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(pollutant, index) in airPollutantsData" :key="'pollutant-'+index">
-                <td>{{ pollutant.name }}</td>
-                <td>{{ pollutant.value }} {{ pollutant.unit }}</td>
-                <td :class="'status-' + pollutant.status.toLowerCase()">{{ pollutant.status }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </template>
+      <div class="pollutants-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Pollutant</th>
+              <th>Value</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(pollutant, index) in airPollutantsData" :key="'pollutant-' + index">
+              <td>{{ pollutant.name }}</td>
+              <td>{{ pollutant.value }} {{ pollutant.unit }}</td>
+              <td :class="'status-' + pollutant.status.toLowerCase()">{{ pollutant.status }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
@@ -73,163 +65,28 @@
 export default {
   name: 'AirQualityCard',
   props: {
-    latitude: {
-      type: Number,
+    airQualityData: {
+      type: Object,
       required: true
     },
-    longitude: {
-      type: Number,
-      required: true
-    },
-    apiEndpoint: {
-      type: String,
-      default: '/api/air-quality'
+    airPollutantsData: {
+      type: Array,
+      default: () => []
     }
-  },
-  data() {
-    return {
-      loading: true,
-      error: null,
-      airQualityData: {
-        value: 0,
-        color: '#41B06E',
-        status: 'Good'
-      },
-      airPollutantsData: []
-    };
   },
   computed: {
-    airQualityPercentage() {
-      // Map the AQI value to a percentage (assuming max AQI is 300 for display purposes)
-      // AQI range is typically 0-500, but we limit the visual scale to make it more readable
-      const maxAqi = 300;
-      return Math.min(this.airQualityData.value / maxAqi * 100, 100);
-    }
-  },
-  mounted() {
-    this.fetchAirQualityData();
-  },
-  watch: {
-    // Refetch when location changes
-    latitude() {
-      this.fetchAirQualityData();
-    },
-    longitude() {
-      this.fetchAirQualityData();
-    }
-  },
-  methods: {
-    async fetchAirQualityData() {
-      this.loading = true;
-      this.error = null;
+     airQualityPercentage() {
+    const gas = this.airQualityData.value;
+    if (this.airQualityData.status !== 'Poor') return 0;
 
-      try {
-        const params = new URLSearchParams({
-          lat: this.latitude,
-          lon: this.longitude
-        });
-        
-        const response = await fetch(`${this.apiEndpoint}?${params}`);
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch air quality data: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        this.processAirQualityData(data);
-      } catch (err) {
-        console.error('Error fetching air quality data:', err);
-        this.error = 'Unable to load air quality data. Please try again.';
-      } finally {
-        this.loading = false;
-      }
-    },
-    
-    processAirQualityData(data) {
-      // Process AQI value and status
-      const aqi = data.aqi || data.main?.aqi || 0;
-      this.airQualityData = {
-        value: aqi,
-        ...this.getAqiStatus(aqi)
-      };
-      
-      // Process pollutants
-      this.airPollutantsData = this.processPollutantData(data.components || {});
-    },
-    
-    getAqiStatus(aqi) {
-      // Map AQI to status and color based on standard classifications
-      if (aqi <= 50) {
-        return { status: 'Good', color: '#41B06E' }; // Green
-      } else if (aqi <= 100) {
-        return { status: 'Moderate', color: '#f59e0b' }; // Yellow
-      } else if (aqi <= 150) {
-        return { status: 'Unhealthy for Sensitive Groups', color: '#f97316' }; // Orange
-      } else if (aqi <= 200) {
-        return { status: 'Unhealthy', color: '#ef4444' }; // Red
-      } else if (aqi <= 300) {
-        return { status: 'Very Unhealthy', color: '#9333ea' }; // Purple
-      } else {
-        return { status: 'Hazardous', color: '#7f1d1d' }; // Dark red/maroon
-      }
-    },
-    
-    processPollutantData(components) {
-      const pollutants = [];
-      
-      // Map of pollutant keys to human-readable names and units
-      const pollutantMap = {
-        co: { name: 'Carbon Monoxide', unit: 'μg/m³' },
-        no: { name: 'Nitric Oxide', unit: 'μg/m³' },
-        no2: { name: 'Nitrogen Dioxide', unit: 'μg/m³' },
-        o3: { name: 'Ozone', unit: 'μg/m³' },
-        so2: { name: 'Sulfur Dioxide', unit: 'μg/m³' },
-        pm2_5: { name: 'PM2.5', unit: 'μg/m³' },
-        pm10: { name: 'PM10', unit: 'μg/m³' },
-        nh3: { name: 'Ammonia', unit: 'μg/m³' }
-      };
-      
-      // Process each pollutant from the API response
-      Object.keys(components).forEach(key => {
-        if (pollutantMap[key]) {
-          const value = components[key];
-          let status = 'Good';
-          
-          // Determine status based on typical threshold values
-          // These thresholds may need to be adjusted based on your specific API
-          if (key === 'pm2_5') {
-            if (value > 35) status = 'Poor';
-            else if (value > 12) status = 'Moderate';
-          } else if (key === 'pm10') {
-            if (value > 150) status = 'Poor';
-            else if (value > 50) status = 'Moderate';
-          } else if (key === 'o3') {
-            if (value > 120) status = 'Poor';
-            else if (value > 70) status = 'Moderate';
-          } else if (key === 'no2') {
-            if (value > 200) status = 'Poor';
-            else if (value > 100) status = 'Moderate';
-          } else if (key === 'so2') {
-            if (value > 350) status = 'Poor';
-            else if (value > 100) status = 'Moderate';
-          } else if (key === 'co') {
-            if (value > 15000) status = 'Poor';
-            else if (value > 7000) status = 'Moderate';
-          }
-          
-          pollutants.push({
-            name: pollutantMap[key].name,
-            value: Math.round(value * 100) / 100, // Round to 2 decimal places
-            unit: pollutantMap[key].unit,
-            status
-          });
-        }
-      });
-      
-      return pollutants;
-    }
+    // Escala 600–800 ppm → 0–100%
+    const min = 600;
+    const max = 800;
+    const percent = ((gas - min) / (max - min)) * 100;
+    return Math.min(Math.max(percent, 0), 100);
   }
-}
+  }
+};
 </script>
 
 <style scoped>
@@ -378,8 +235,13 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error State */

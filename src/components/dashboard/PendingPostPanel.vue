@@ -26,7 +26,7 @@ export default {
   methods: {
     async approvePost(post) {
       const userStore = useUserStore();
-      await fetch(`http://localhost:3000/api/communities/${post.community_id}/posts/${post.post_id}/approve`, {
+      await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${post.community_id}/posts/${post.post_id}/approve`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${userStore.accessToken}`,
@@ -36,7 +36,7 @@ export default {
     },
     async rejectPost(post) {
       const userStore = useUserStore();
-      await fetch(`http://localhost:3000/api/communities/${post.community_id}/posts/${post.post_id}/reject`, {
+      await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${post.community_id}/posts/${post.post_id}/reject`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${userStore.accessToken}`,

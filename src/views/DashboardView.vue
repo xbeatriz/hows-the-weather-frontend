@@ -1,10 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <Sidebar
-      :activeMenu="activeMenu"
-      @menuChange="handleMenuChange"
-      @logout="handleLogout"
-    />
+    <Sidebar :activeMenu="activeMenu" @menuChange="handleMenuChange" @logout="handleLogout" />
     <div class="dashboard-content">
       <div class="content-header">
         <h1>{{ pageTitle }}</h1>
@@ -28,37 +24,16 @@
       <component :is="currentComponent" :data="componentData" />
 
       <!-- Modais -->
-      <Modal
-        v-if="showCreateUser"
-        title="Criar Novo Utilizador"
-        @close="showCreateUser = false"
-      >
-        <CreateUserForm
-          @submitted="onFormSubmitted"
-          @cancel="showCreateUser = false"
-        />
+      <Modal v-if="showCreateUser" title="Criar Novo Utilizador" @close="showCreateUser = false">
+        <CreateUserForm @submitted="onFormSubmitted" @cancel="showCreateUser = false" />
       </Modal>
 
-      <Modal
-        v-if="showCreateSensor"
-        title="Criar Novo Sensor"
-        @close="showCreateSensor = false"
-      >
-        <CreateSensorForm
-          @submitted="onFormSubmitted"
-          @cancel="showCreateSensor = false"
-        />
+      <Modal v-if="showCreateSensor" title="Criar Novo Sensor" @close="showCreateSensor = false">
+        <CreateSensorForm @submitted="onFormSubmitted" @cancel="showCreateSensor = false" />
       </Modal>
 
-      <Modal
-        v-if="showCreateCommunity"
-        title="Criar Nova Comunidade"
-        @close="showCreateCommunity = false"
-      >
-        <CreateCommunityForm
-          @submitted="onFormSubmitted"
-          @cancel="showCreateCommunity = false"
-        />
+      <Modal v-if="showCreateCommunity" title="Criar Nova Comunidade" @close="showCreateCommunity = false">
+        <CreateCommunityForm @submitted="onFormSubmitted" @cancel="showCreateCommunity = false" />
       </Modal>
     </div>
   </div>
@@ -101,7 +76,7 @@ export default {
       showCreateSensor: false,
       showCreateCommunity: false,
 
-      userStore: useUserStore(), // <-- adicionar aqui
+      userStore: useUserStore(),
     };
   },
   computed: {
@@ -110,7 +85,7 @@ export default {
         this.activeMenu === "pendingPosts" &&
         this.userStore.user.role !== "admin"
       ) {
-        return "OverviewPanel"; // ou podes redirecionar, se preferires
+        return "OverviewPanel";
       }
 
       switch (this.activeMenu) {
@@ -162,7 +137,9 @@ export default {
 
       switch (this.activeMenu) {
         case "users":
-          fetch("http://localhost:3000/api/user", { headers })
+          fetch("https://hows-the-weather-backend.onrender.com/api/user", {
+            headers,
+          })
             .then((res) => {
               if (!res.ok) throw new Error("Erro ao carregar usuários");
               return res.json();
@@ -176,7 +153,9 @@ export default {
           break;
 
         case "sensors":
-          fetch("http://localhost:3000/api/sensors", { headers })
+          fetch("https://hows-the-weather-backend.onrender.com/api/sensors", {
+            headers,
+          })
             .then((res) => {
               if (!res.ok) throw new Error("Erro ao carregar sensores");
               return res.json();
@@ -190,17 +169,15 @@ export default {
           break;
 
         case "communities":
-          fetch("http://localhost:3000/api/communities", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+          fetch("https://hows-the-weather-backend.onrender.com/api/communities", {
+            headers,
           })
             .then((res) => {
               if (!res.ok) throw new Error("Erro ao carregar comunidades");
               return res.json();
             })
             .then((data) => {
-              this.communities = data.data.communities || [];
+              this.componentData = { communities: data.data.communities || [] };
             })
             .catch(() => {
               this.componentData = { communities: [] };
@@ -212,14 +189,16 @@ export default {
             this.componentData = {};
             break;
           }
-          fetch("http://localhost:3000/api/communities", { headers })
+          fetch("https://hows-the-weather-backend.onrender.com/api/communities", {
+            headers,
+          })
             .then((res) => {
               if (!res.ok) throw new Error("Erro ao carregar posts pendentes");
               return res.json();
             })
             .then((data) => {
               const pendingPosts = [];
-              for (const community of data.communities || []) {
+              for (const community of data.data.communities || []) {
                 for (const post of community.community_posts || []) {
                   if (post.status === "waiting") {
                     pendingPosts.push({ ...post, community_id: community._id });
@@ -236,25 +215,26 @@ export default {
         case "overview":
         default:
           Promise.all([
-            fetch("http://localhost:3000/api/user", { headers }).then((res) => {
+            fetch("https://hows-the-weather-backend.onrender.com/api/user", {
+              headers,
+            }).then((res) => {
               if (!res.ok) throw new Error("Erro no fetch users");
               return res.json();
             }),
-            fetch("http://localhost:3000/api/sensors", { headers }).then(
-              (res) => {
-                if (!res.ok) throw new Error("Erro no fetch sensors");
-                return res.json();
-              }
-            ),
-            fetch("http://localhost:3000/api/communities", { headers }).then(
-              (res) => {
-                if (!res.ok) throw new Error("Erro no fetch communities");
-                return res.json();
-              }
-            ),
+            fetch("https://hows-the-weather-backend.onrender.com/api/sensors", {
+              headers,
+            }).then((res) => {
+              if (!res.ok) throw new Error("Erro no fetch sensors");
+              return res.json();
+            }),
+            fetch("https://hows-the-weather-backend.onrender.com/api/communities", {
+              headers,
+            }).then((res) => {
+              if (!res.ok) throw new Error("Erro no fetch communities");
+              return res.json();
+            }),
           ])
             .then(([usersData, sensorsData, communitiesData]) => {
-              // Contar sensores ativos
               const activeSensorsCount = (
                 sensorsData.data.sensors || []
               ).filter((sensor) => sensor.status === "active").length;
@@ -295,7 +275,7 @@ export default {
       this.showCreateUser = false;
       this.showCreateSensor = false;
       this.showCreateCommunity = false;
-      this.loadComponentData(); // Recarrega após submissão
+      this.loadComponentData();
     },
   },
   mounted() {
@@ -309,16 +289,6 @@ export default {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-.dashboard-container {
-  display: flex;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #f5f7fa;
 }
 
 .dashboard-container {
@@ -338,7 +308,6 @@ export default {
   background: #f5f7fa;
   overflow-y: auto;
   color: #222;
-  /* cor de texto escura para legibilidade */
   font-family: Arial, sans-serif;
   font-size: 16px;
 }

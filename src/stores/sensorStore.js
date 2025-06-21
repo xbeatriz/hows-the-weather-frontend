@@ -9,16 +9,15 @@ export const useSensorStore = defineStore('sensorStore', {
   }),
 
   actions: {
-    async fetchSensors(token) {
+    async fetchSensors() {
       this.loading = true;
       this.error = null;
 
       try {
-        const res = await fetch('/api/sensors', {
+        const res = await fetch('https://hows-the-weather-backend.onrender.com/api/sensors', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
           }
         });
 
@@ -28,14 +27,13 @@ export const useSensorStore = defineStore('sensorStore', {
         }
 
         const data = await res.json();
-        this.sensors = data;
+        this.sensors = data.data.sensors;
       } catch (err) {
         this.error = err.message;
       } finally {
         this.loading = false;
       }
     },
-
     clearSensors() {
       this.sensors = [];
       this.error = null;

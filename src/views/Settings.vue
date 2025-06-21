@@ -1,13 +1,7 @@
 <template>
   <div class="page-layout">
-      <Sidebar
-        :activeMenu="activeMenu"
-        :menuItems="menuItems"
-        :user="userStore.user"
-        headerText="Weather Admin"
-        @menuChange="handleMenuChange"
-        @logout="handleLogout"
-      />
+    <Sidebar :activeMenu="activeMenu" :menuItems="menuItems" :user="userStore.user" headerText="Weather Admin"
+      @menuChange="handleMenuChange" @logout="handleLogout" />
 
     <div class="content-wrapper">
       <div class="settings-container">
@@ -19,43 +13,23 @@
 
           <div class="form-group">
             <label for="name">Nome</label>
-            <input
-              id="name"
-              type="text"
-              v-model="userData.name"
-              placeholder="Novo nome"
-            />
+            <input id="name" type="text" v-model="userData.name" placeholder="Novo nome" />
           </div>
 
           <div class="form-group">
             <label for="email">Email</label>
-            <input
-              id="email"
-              type="text"
-              v-model="userData.email"
-              placeholder="Novo email"
-            />
+            <input id="email" type="text" v-model="userData.email" placeholder="Novo email" />
           </div>
 
           <div class="form-group">
             <label for="password">Nova Password</label>
-            <input
-              id="password"
-              type="password"
-              v-model="userData.password"
-              placeholder="Nova password"
-            />
+            <input id="password" type="password" v-model="userData.password" placeholder="Nova password" />
             <small class="hint">Deixe em branco para manter a senha atual</small>
           </div>
 
           <div class="form-group">
-            <button
-              type="button"
-              class="save-btn"
-              @click="updateUserData"
-              :disabled="!canUpdateUserData"
-              title="Clique para atualizar os seus dados pessoais"
-            >
+            <button type="button" class="save-btn" @click="updateUserData" :disabled="!this.canUpdateUserData"
+              :title="this.canUpdateUserData ? 'Clique para atualizar os seus dados pessoais' : 'Preencha os dados para atualizar'">
               Atualizar Dados Pessoais
             </button>
           </div>
@@ -81,11 +55,7 @@
             <label for="sensor-select">Sensor</label>
             <select id="sensor-select" v-model="config.sensorid">
               <option :value="null">Nenhum sensor associado</option>
-              <option
-                v-for="sensor in filteredSensors"
-                :key="sensor._id"
-                :value="sensor._id"
-              >
+              <option v-for="sensor in filteredSensors" :key="sensor._id" :value="sensor._id">
                 {{ sensor.name || sensor._id }}
               </option>
             </select>
@@ -96,44 +66,20 @@
 
             <div class="alert-row">
               <label>Temperatura</label>
-              <input
-                type="number"
-                v-model.number="config.alert_thresholds.temperature.min"
-                placeholder="Min"
-              />
-              <input
-                type="number"
-                v-model.number="config.alert_thresholds.temperature.max"
-                placeholder="Max"
-              />
+              <input type="number" v-model.number="config.alert_thresholds.temperature.min" placeholder="Min" />
+              <input type="number" v-model.number="config.alert_thresholds.temperature.max" placeholder="Max" />
             </div>
 
             <div class="alert-row">
               <label>Humidade</label>
-              <input
-                type="number"
-                v-model.number="config.alert_thresholds.humidity.min"
-                placeholder="Min"
-              />
-              <input
-                type="number"
-                v-model.number="config.alert_thresholds.humidity.max"
-                placeholder="Max"
-              />
+              <input type="number" v-model.number="config.alert_thresholds.humidity.min" placeholder="Min" />
+              <input type="number" v-model.number="config.alert_thresholds.humidity.max" placeholder="Max" />
             </div>
 
             <div class="alert-row">
               <label>Gás</label>
-              <input
-                type="number"
-                v-model.number="config.alert_thresholds.gas.min"
-                placeholder="Min"
-              />
-              <input
-                type="number"
-                v-model.number="config.alert_thresholds.gas.max"
-                placeholder="Max"
-              />
+              <input type="number" v-model.number="config.alert_thresholds.gas.min" placeholder="Min" />
+              <input type="number" v-model.number="config.alert_thresholds.gas.max" placeholder="Max" />
             </div>
           </fieldset>
 
@@ -252,17 +198,18 @@ export default {
         const payload = {
           name: this.userData.name,
           email: this.userData.email,
+          password: null,
         };
 
         if (this.userData.password) {
           payload.password = this.userData.password;
         }
 
-        const res = await fetch('/api/me', {
+        const res = await fetch('https://hows-the-weather-backend.onrender.com/api/me', {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.userStore.token}`,
+            Authorization: `Bearer ${this.userStore.accessToken}`,
           },
           body: JSON.stringify(payload),
         });
@@ -270,7 +217,7 @@ export default {
         if (!res.ok) throw new Error('Erro ao atualizar dados pessoais');
 
         const updated = await res.json();
-        this.userStore.setUserData(updated, this.userStore.token);
+        this.userStore.setUserData(updated, this.userStore.accessToken);
         this.userData.password = '';
         alert('Dados atualizados com sucesso!');
       } catch (err) {
@@ -290,11 +237,11 @@ export default {
           ],
         };
 
-        const res = await fetch('/api/me/configs', {
+        const res = await fetch('https://hows-the-weather-backend.onrender.com/api/me/configs', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.userStore.token}`,
+            Authorization: `Bearer ${this.userStore.accessToken}`,
           },
           body: JSON.stringify(payload),
         });
@@ -304,7 +251,7 @@ export default {
         const updatedConfigs = await res.json();
         this.userStore.setUserData(
           { ...this.userStore.user, configs: updatedConfigs },
-          this.userStore.token
+          this.userStore.accessToken
         );
         alert('Configurações atualizadas!');
       } catch (err) {
@@ -312,6 +259,7 @@ export default {
         alert('Erro ao atualizar configurações.');
       }
     },
+
   },
 };
 </script>
@@ -323,17 +271,43 @@ export default {
   padding: 0;
   box-sizing: border-box;
 }
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+.personal-data {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+}
+
+.alert-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
 .page-layout {
   display: flex;
   height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  background: #f5f7fa;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #f5f7fa;
+
 }
 
-.sidebar-wrapper, /* só se usares wrapper, senão podes aplicar direto no Sidebar */
+.sidebar-wrapper,
+/* só se usares wrapper, senão podes aplicar direto no Sidebar */
 Sidebar {
-  flex: 0 0 250px; /* largura fixa para sidebar */
+  flex: 0 0 250px;
+  /* largura fixa para sidebar */
   background-color: #fff;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
   overflow-y: auto;
@@ -360,7 +334,8 @@ Sidebar {
   background-color: #fff;
   color: #222;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.12);
-  min-height: calc(100vh - 80px); /* Ocupa quase toda a altura */
+  min-height: calc(100vh - 80px);
+  /* Ocupa quase toda a altura */
 }
 
 /* Título principal */
@@ -477,4 +452,3 @@ select:focus {
   background-color: #2d7d4b;
 }
 </style>
-

@@ -1,6 +1,15 @@
 <template>
   <div class="sidebar">
     <div class="logo-container">
+      <!-- Botão Voltar -->
+      <div class="back-button" @click="goBack">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M7.707 14.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L4.414 9H17a1 1 0 110 2H4.414l3.293 3.293a1 1 0 010 1.414z"
+            clip-rule="evenodd" />
+        </svg>
+        <span>Voltar</span>
+      </div>
       <h1>{{ headerText }}</h1>
     </div>
 
@@ -14,10 +23,11 @@
 
     <nav class="sidebar-nav">
       <ul>
-        <li v-for="item in menuItems" :key="item.id" @click="selectMenu(item.id)"
-          :class="{ active: activeMenu === item.id }">
+        <li v-for="item in menuItems" :key="item.id" :class="{ active: activeMenu === item.id }"
+          @click="handleMenuClick(item)">
           <font-awesome-icon :icon="item.icon" /> {{ item.name }}
         </li>
+
       </ul>
     </nav>
 
@@ -59,15 +69,24 @@ export default {
     },
   },
   methods: {
+    goBack() {
+      this.$router.back(); // Usa o router do Vue
+    },
     selectMenu(menuItem) {
       this.$emit("menuChange", menuItem);
     },
     logout() {
-      this.$emit("logout");
+      const userStore = useUserStore();
+      userStore.logout();
+      this.$router.push('/login');
     },
     openSettings() {
       router.push({ name: 'Settings' });
     },
+    handleMenuClick(item) {
+      this.selectMenu(item.id);
+    }
+    ,
   },
   setup() {
     const userStore = useUserStore();
@@ -76,12 +95,14 @@ export default {
     const menuItems = computed(() => {
       const items = [
         { id: "overview", name: "Overview", icon: ["fas", "tachometer-alt"] },
-        { id: "sensors", name: "Sensors", icon: ["fas", "microchip"] },
-        { id: "communities", name: "Communities", icon: ["fas", "city"] },
+        { id: "communities", name: "Community", icon: ["fas", "city"] },
       ];
 
       if (user.role === "admin") {
+        items.pop()
         items.splice(2, 0, { id: "users", name: "Users", icon: ["fas", "users"] });
+        items.push({ id: "sensors", name: "Sensores", icon: ["fas", "microchip"] });
+        items.push({ id: "communities", name: "Communities", icon: ["fas", "city"] });
         items.push({ id: "pendingPosts", name: "Verificar Posts", icon: ["fas", "check-circle"] });
       }
 
@@ -112,6 +133,27 @@ export default {
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 10;
   transition: transform 0.3s ease;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #41b06e;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: rgba(65, 176, 110, 0.1);
+  border-radius: 6px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
 }
 
 .logo-container {
