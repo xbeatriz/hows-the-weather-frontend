@@ -88,7 +88,6 @@ const showModal = ref(false);
 const openModal = () => (showModal.value = true);
 const closeModal = () => (showModal.value = false);
 
-
 const userStore = useUserStore();
 const communityStore = useCommunityStore();
 const userId = computed(() => userStore.user._id);
@@ -108,14 +107,14 @@ const handleSubmit = async () => {
   console.log('📝 Submeter novo post:', props.newPost);
   await props.onCreatePost?.();
 };
+
 async function getUserName(userId) {
-  // Verifica se já está no cache
   if (userNames.value.has(userId)) {
     return userNames.value.get(userId);
   }
 
   try {
-    const res = await fetch(`http://localhost:3000/api/user/${userId}/name`, {
+    const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/user/${userId}/name`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -142,7 +141,7 @@ const refreshPosts = async () => {
 
 async function likePost(postId) {
   try {
-    const res = await fetch(`http://localhost:3000/api/communities/${props.community._id}/posts/${postId}`, {
+    const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${props.community._id}/posts/${postId}`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${userStore.accessToken}`,
@@ -152,12 +151,11 @@ async function likePost(postId) {
     });
 
     if (!res.ok) throw new Error('Erro ao dar like');
-    await refreshPosts(); // recarrega os posts atualizados
+    await refreshPosts();
   } catch (error) {
     console.error('Erro ao dar like:', error);
   }
 }
-
 
 onMounted(async () => {
   for (const post of props.posts) {
@@ -167,6 +165,7 @@ onMounted(async () => {
   }
 });
 </script>
+
 
 <style scoped>
 * {

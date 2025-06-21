@@ -1,7 +1,12 @@
 <template>
   <div class="home">
-    <Sidebar :headerText="'Painel de Controlo'" :user="user" :activeMenu="activeMenu" @menuChange="handleMenuChange"
-      @logout="handleLogout" />
+    <Sidebar
+      :headerText="'Painel de Controlo'"
+      :user="user"
+      :activeMenu="activeMenu"
+      @menuChange="handleMenuChange"
+      @logout="handleLogout"
+    />
 
     <div class="dashboard-content">
       <component :is="currentComponent" v-bind="componentProps" />
@@ -48,14 +53,12 @@ export default {
       }
     });
 
-
-
     const fetchPosts = async () => {
-      if (!userCommunity._id) return;
+      if (!userCommunity.value?._id) return;
       try {
-        await communityStore.fetchPostsByCommunityId(userCommunity._id);
+        await communityStore.fetchPostsByCommunityId(userCommunity.value._id);
       } catch (err) {
-        console.error("Erro ao buscar posts:", err);
+        console.error('Erro ao buscar posts:', err);
       }
     };
 
@@ -63,22 +66,27 @@ export default {
       try {
         const body = {
           description: newPost.value.description,
-          tags: newPost.value.tags.split(',').map(t => t.trim()),
+          tags: newPost.value.tags.split(',').map((t) => t.trim()),
           sensor_id: user.value.configs?.[0]?.sensorid || null,
         };
-        await fetch(`http://localhost:3000/api/communities/${userCommunity.value._id}/posts`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
+        await fetch(
+          `https://hows-the-weather-backend.onrender.com/api/communities/${userCommunity.value._id}/posts`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          }
+        );
         newPost.value.description = '';
         newPost.value.tags = '';
         await fetchPosts();
       } catch (err) {
-        console.error("Erro ao criar publicação:", err);
+        console.error('Erro ao criar publicação:', err);
       }
     };
+
     const activeMenu = ref('overview');
+
     watch(
       () => activeMenu.value,
       async (newValue) => {
@@ -87,6 +95,7 @@ export default {
         }
       }
     );
+
     return {
       user,
       community: userCommunity,
@@ -98,8 +107,17 @@ export default {
   },
   data() {
     return {
-      selectedDate: new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-      currentDate: new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+      selectedDate: new Date().toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      }),
+      currentDate: new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
       currentWeather: {
         temperature: 23,
         condition: 'sunny',
@@ -107,9 +125,12 @@ export default {
         humidity: 65,
       },
       dailyTemperature: [
-        { time: '6AM', temp: 18 }, { time: '9AM', temp: 20 },
-        { time: '12PM', temp: 23 }, { time: '3PM', temp: 25 },
-        { time: '6PM', temp: 22 }, { time: '9PM', temp: 19 },
+        { time: '6AM', temp: 18 },
+        { time: '9AM', temp: 20 },
+        { time: '12PM', temp: 23 },
+        { time: '3PM', temp: 25 },
+        { time: '6PM', temp: 22 },
+        { time: '9PM', temp: 19 },
       ],
       weeklyTemperature: [
         { day: 'Mon', icon: '☀️', high: 25, low: 18 },
@@ -155,7 +176,7 @@ export default {
     currentComponent() {
       switch (this.activeMenu) {
         case 'communities':
-          return this.community && this.community._id ? Comunity : 'DivEmpty'
+          return this.community && this.community._id ? Comunity : 'DivEmpty';
         default:
           return OverviewView;
       }
@@ -167,15 +188,14 @@ export default {
             community: this.community,
             posts: this.posts,
             newPost: this.newPost,
-            onCreatePost: this.createPost
+            onCreatePost: this.createPost,
           };
         default:
-          return {
-          };
+          return {};
       }
     },
-  }
-}
+  },
+};
 </script>
 
 <style scoped>
@@ -199,7 +219,8 @@ body {
   width: 100%;
   transition: margin-left 0.3s ease;
   color: #334155;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+    Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   overflow-x: hidden;
 }
 
@@ -220,7 +241,6 @@ body {
   padding: 16px;
   box-sizing: border-box;
 }
-
 
 /* Welcome section */
 .welcome-section {
@@ -259,7 +279,6 @@ body {
 
 /* Responsive Adjustments */
 @media (min-width: 2000px) {
-
   .weather-card-grid,
   .metrics-card-grid {
     margin: 0 5% 20px;
@@ -268,7 +287,6 @@ body {
 }
 
 @media (min-width: 1440px) and (max-width: 1999px) {
-
   .weather-card-grid,
   .metrics-card-grid {
     margin: 0 4% 20px;
@@ -277,7 +295,6 @@ body {
 }
 
 @media (min-width: 1025px) and (max-width: 1439px) {
-
   .weather-card-grid,
   .metrics-card-grid {
     margin: 0 3% 20px;
@@ -286,7 +303,6 @@ body {
 }
 
 @media (max-width: 1024px) {
-
   .weather-card-grid,
   .metrics-card-grid {
     flex-direction: column;

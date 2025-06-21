@@ -121,6 +121,7 @@ import { useUserStore } from '@/stores/userStore'
 import Modal from '@/components//common/Modal.vue'
 import CreateCommunityForm from '@/components/forms/CreateCommunityForm.vue'
 
+
 const communityStore = useCommunityStore()
 const userStore = useUserStore()
 
@@ -175,7 +176,7 @@ const closeEditModal = () => {
 }
 const submitEditCommunity = async () => {
   try {
-    const response = await fetch(`http://localhost:3000/api/communities/${editedCommunityId.value}`, {
+    const response = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${editedCommunityId.value}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -197,7 +198,7 @@ const submitEditCommunity = async () => {
 const deleteCommunity = async (id) => {
   if (!confirm('Are you sure you want to delete this community?')) return
   try {
-    const response = await fetch(`http://localhost:3000/api/communities/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/communities/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${userStore.accessToken}` },
     })
@@ -215,6 +216,7 @@ const onCommunityCreated = (newCommunity) => {
   communities.value.push(newCommunity)
 }
 </script>
+
 
 <style scoped>
 /* Mesmos estilos adaptados do seu código original */

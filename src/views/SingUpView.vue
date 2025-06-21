@@ -5,7 +5,10 @@
       <div class="login-card">
         <div class="login-form-section">
           <h1>Sign Up</h1>
-          <p class="subtitle">Already have an account? <router-link to="/login">Login</router-link></p>
+          <p class="subtitle">
+            Already have an account?
+            <router-link to="/login">Login</router-link>
+          </p>
 
           <div class="form-group">
             <label for="name">Full Name</label>
@@ -14,7 +17,12 @@
 
           <div class="form-group">
             <label for="email">Email Address</label>
-            <input type="email" id="email" v-model="email" placeholder="you@example.com" />
+            <input
+              type="email"
+              id="email"
+              v-model="email"
+              placeholder="you@example.com"
+            />
           </div>
           <div class="form-group">
             <label for="location">Localização</label>
@@ -29,19 +37,33 @@
           </div>
           <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" id="password" v-model="password" placeholder="Enter 6 character or more" />
+            <input
+              type="password"
+              id="password"
+              v-model="password"
+              placeholder="Enter 6 character or more"
+            />
           </div>
 
           <div class="form-group">
             <label for="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword" v-model="confirmPassword" placeholder="Repeat your password" />
+            <input
+              type="password"
+              id="confirmPassword"
+              v-model="confirmPassword"
+              placeholder="Repeat your password"
+            />
           </div>
 
           <button @click="signUp" class="login-button">SIGN UP</button>
         </div>
 
         <div class="login-image-section">
-          <img src="@/assets/undraw_weather.svg" alt="Sign Up" class="login-illustration" />
+          <img
+            src="@/assets/undraw_weather.svg"
+            alt="Sign Up"
+            class="login-illustration"
+          />
         </div>
       </div>
     </div>
@@ -74,7 +96,7 @@ export default {
       }
 
       try {
-        const response = await fetch('http://localhost:3000/api/user/register', {
+        const response = await fetch('https://hows-the-weather-backend.onrender.com/api/user/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -93,10 +115,8 @@ export default {
           return
         }
 
-        // Aqui só mostra mensagem de sucesso para o utilizador
         alert('Registo efetuado! Por favor, verifique seu email para ativar a conta.')
 
-        // Limpar campos para evitar confusão
         this.name = ''
         this.email = ''
         this.password = ''
@@ -109,7 +129,6 @@ export default {
       }
     }
   }
-
 }
 </script>
 

@@ -255,7 +255,7 @@ export default {
         let response;
         if (sensorId && this.data.sensors.find((s) => s._id === sensorId)) {
           // PATCH (Update)
-          response = await fetch(`http://localhost:3000/api/sensors/${sensorId}`, {
+          response = await fetch(`https://hows-the-weather-backend.onrender.com/api/sensors/${sensorId}`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
@@ -269,7 +269,7 @@ export default {
           });
         } else {
           // POST (Create)
-          response = await fetch(`http://localhost:3000/api/sensors`, {
+          response = await fetch(`https://hows-the-weather-backend.onrender.com/api/sensors`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -305,7 +305,7 @@ export default {
     async deleteSensor(sensorId) {
       if (confirm('Tem certeza que deseja apagar este sensor?')) {
         try {
-          const response = await fetch(`http://localhost:3000/api/sensors/${sensorId}`, {
+          const response = await fetch(`https://hows-the-weather-backend.onrender.com/api/sensors/${sensorId}`, {
             method: 'DELETE',
             headers: {
               'Content-Type': 'application/json',
@@ -323,7 +323,6 @@ export default {
         }
       }
     },
-    // Evento chamado quando o CreateSensorForm emitir "submitted"
     onFormSubmitted(newSensor) {
       this.showCreateSensor = false;
       this.data.sensors.push(newSensor);

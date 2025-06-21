@@ -53,7 +53,7 @@ export default {
   },
   methods: {
     async createUser() {
-      const res = await fetch('http://localhost:3000/api/user/register', {
+      const res = await fetch('https://hows-the-weather-backend.onrender.com//api/user/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(this.form)

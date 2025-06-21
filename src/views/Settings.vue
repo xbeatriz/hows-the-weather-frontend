@@ -205,11 +205,11 @@ export default {
           payload.password = this.userData.password;
         }
 
-        const res = await fetch('/api/me', {
+        const res = await fetch('https://hows-the-weather-backend.onrender.com/api/me', {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.userStore.token}`,
+            Authorization: `Bearer ${this.userStore.accessToken}`,
           },
           body: JSON.stringify(payload),
         });
@@ -217,7 +217,7 @@ export default {
         if (!res.ok) throw new Error('Erro ao atualizar dados pessoais');
 
         const updated = await res.json();
-        this.userStore.setUserData(updated, this.userStore.token);
+        this.userStore.setUserData(updated, this.userStore.accessToken);
         this.userData.password = '';
         alert('Dados atualizados com sucesso!');
       } catch (err) {
@@ -237,11 +237,11 @@ export default {
           ],
         };
 
-        const res = await fetch('/api/me/configs', {
+        const res = await fetch('https://hows-the-weather-backend.onrender.com/api/me/configs', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.userStore.token}`,
+            Authorization: `Bearer ${this.userStore.accessToken}`,
           },
           body: JSON.stringify(payload),
         });
@@ -251,7 +251,7 @@ export default {
         const updatedConfigs = await res.json();
         this.userStore.setUserData(
           { ...this.userStore.user, configs: updatedConfigs },
-          this.userStore.token
+          this.userStore.accessToken
         );
         alert('Configurações atualizadas!');
       } catch (err) {
@@ -259,6 +259,7 @@ export default {
         alert('Erro ao atualizar configurações.');
       }
     },
+
   },
 };
 </script>
@@ -298,7 +299,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #f5f7fa;
+  background-color: #f5f7fa;
 
 }
 

@@ -4,7 +4,7 @@ import { useUserStore } from './userStore'
 export const useCommunityStore = defineStore('community', {
   state: () => ({
     communities: [],
-    userCommunity: null,     // dados detalhados da comunidade do user
+    userCommunity: null,    
     communityPosts: [],
     loading: false,
     error: null,
@@ -12,81 +12,80 @@ export const useCommunityStore = defineStore('community', {
   actions: {
     async fetchAllCommunities() {
       try {
-    const userStore = useUserStore();
+        const userStore = useUserStore();
 
-    const resAll = await fetch('http://localhost:3000/api/communities', {
-      headers: { Authorization: `Bearer ${userStore.accessToken}` }
-    });
+        const resAll = await fetch('https://hows-the-weather-backend.onrender.com/api/communities', {
+          headers: { Authorization: `Bearer ${userStore.accessToken}` }
+        });
 
-    if (!resAll.ok) throw new Error('Erro ao buscar comunidades');
+        if (!resAll.ok) throw new Error('Erro ao buscar comunidades');
 
-    const dataAll = await resAll.json();
-    this.communities = dataAll?.data?.communities
-  }catch (error) {
-    this.error = error.message || 'Erro desconhecido';
-    return false;
-  }
+        const dataAll = await resAll.json();
+        this.communities = dataAll?.data?.communities
+      } catch (error) {
+        this.error = error.message || 'Erro desconhecido';
+        return false;
+      }
     },
-async fetchCommunityByUserLocation() {
-  this.loading = true;
-  this.error = null;
 
-  try {
-    const userStore = useUserStore();
+    async fetchCommunityByUserLocation() {
+      this.loading = true;
+      this.error = null;
 
-    const resAll = await fetch('http://localhost:3000/api/communities', {
-      headers: { Authorization: `Bearer ${userStore.accessToken}` }
-    });
+      try {
+        const userStore = useUserStore();
 
-    if (!resAll.ok) throw new Error('Erro ao buscar comunidades');
+        const resAll = await fetch('https://hows-the-weather-backend.onrender.com/api/communities', {
+          headers: { Authorization: `Bearer ${userStore.accessToken}` }
+        });
 
-    const dataAll = await resAll.json();
+        if (!resAll.ok) throw new Error('Erro ao buscar comunidades');
 
-    this.communities = Array.isArray(dataAll?.data?.communities)
-      ? dataAll.data.communities
-      : [];
+        const dataAll = await resAll.json();
 
-    const userLocation = userStore.user?.location;
+        this.communities = Array.isArray(dataAll?.data?.communities)
+          ? dataAll.data.communities
+          : [];
 
-    const community = this.communities.find(c => c.location === userLocation);
+        const userLocation = userStore.user?.location;
 
-    if (!community) {
-      this.userCommunity = null;
-      this.communityPosts = [];
-      return false;
-    }
+        const community = this.communities.find(c => c.location === userLocation);
 
-    const resDetail = await fetch(`http://localhost:3000/api/communities/${community._id}`, {
-      headers: { Authorization: `Bearer ${userStore.accessToken}` }
-    });
+        if (!community) {
+          this.userCommunity = null;
+          this.communityPosts = [];
+          return false;
+        }
 
-    if (!resDetail.ok) throw new Error('Erro ao buscar dados da comunidade');
+        const resDetail = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${community._id}`, {
+          headers: { Authorization: `Bearer ${userStore.accessToken}` }
+        });
 
-    const dataDetail = await resDetail.json();
+        if (!resDetail.ok) throw new Error('Erro ao buscar dados da comunidade');
 
-    this.userCommunity = dataDetail.data || null;
-    this.communityPosts = this.userCommunity?.community_posts || [];
-    return !!this.userCommunity;
-  } catch (error) {
-    this.error = error.message || 'Erro desconhecido';
-    return false;
-  } finally {
-    this.loading = false;
-  }
-}
+        const dataDetail = await resDetail.json();
 
-    ,
+        this.userCommunity = dataDetail.data || null;
+        this.communityPosts = this.userCommunity?.community_posts || [];
+        return !!this.userCommunity;
+      } catch (error) {
+        this.error = error.message || 'Erro desconhecido';
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
 
-    async createCommunity(location,member_count) {
+    async createCommunity(location, member_count) {
       try {
         const userStore = useUserStore()
-        const res = await fetch('http://localhost:3000/api/communities', {
+        const res = await fetch('https://hows-the-weather-backend.onrender.com/api/communities', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${userStore.accessToken}`
           },
-          body: JSON.stringify({ location ,member_count})
+          body: JSON.stringify({ location, member_count })
         })
 
         if (!res.ok) throw new Error('Erro ao criar comunidade')
