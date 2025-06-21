@@ -59,7 +59,7 @@ export default {
         body: JSON.stringify(this.form)
       });
       const data = await res.json();
-      console.log(data);
+      (data);
       this.$emit('created', data)
     }
   }

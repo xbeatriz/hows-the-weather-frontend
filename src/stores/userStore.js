@@ -13,6 +13,7 @@ export const useUserStore = defineStore('userStore', {
       const storedAccessToken = localStorage.getItem('accessToken');
       const storedRefreshToken = localStorage.getItem('refreshToken');
 
+
       if (storedUser) this.user = JSON.parse(storedUser);
       if (storedAccessToken) this.accessToken = storedAccessToken;
       if (storedRefreshToken) this.refreshToken = storedRefreshToken;

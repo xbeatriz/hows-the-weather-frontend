@@ -88,7 +88,7 @@ export default {
     searchWeather() {
       if (this.searchQuery.trim()) {
         // Add your weather search logic here
-        console.log(`Searching weather for: ${this.searchQuery}`);
+        (`Searching weather for: ${this.searchQuery}`);
         // You can redirect to a weather details page or show results
         // this.$router.push({ name: 'WeatherDetails', params: { city: this.searchQuery } });
       }

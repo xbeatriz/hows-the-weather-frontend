@@ -228,7 +228,7 @@ export default {
     selectSensor(sensorId) {
       const sensor = this.data.sensors.find((s) => s._id === sensorId);
       if (!sensor) {
-        console.log('Sensor não encontrado');
+        ('Sensor não encontrado');
         return;
       }
       this.sensorData = sensor;

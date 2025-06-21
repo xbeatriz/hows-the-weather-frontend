@@ -28,7 +28,6 @@ export const useSensorStore = defineStore('sensorStore', {
 
         const data = await res.json();
         this.sensors = data.data.sensors;
-        console.log('Sensors fetched:', this.sensors);
       } catch (err) {
         this.error = err.message;
       } finally {

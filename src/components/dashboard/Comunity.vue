@@ -108,7 +108,7 @@ const userNames = ref(new Map());
 
 const handleSubmit = async () => {
   if (!props.newPost.description.trim()) return;
-  console.log('📝 Submeter novo post:', props.newPost);
+  ('📝 Submeter novo post:', props.newPost);
   await props.onCreatePost?.();
 };
 
