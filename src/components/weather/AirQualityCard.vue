@@ -28,10 +28,12 @@
           <span>Unhealthy</span>
         </div>
         <div class="meter-bar">
-          <div class="meter-fill" :style="{ width: `${airQualityPercentage}%`, backgroundColor: airQualityData.color }">
-          </div>
+          <div class="meter-fill" :style="airQualityData.status === 'Poor'
+            ? { width: `${airQualityPercentage}%`, backgroundColor: airQualityData.color }
+            : { width: '0%' }"></div>
           <div class="meter-marker" :style="{ left: `${airQualityPercentage}%` }"></div>
         </div>
+
       </div>
       <div class="air-quality-details">
         <div class="aqi-value">AQI: <strong>{{ airQualityData.value }}</strong></div>
@@ -73,14 +75,19 @@ export default {
     }
   },
   computed: {
-    airQualityPercentage() {
-      const maxAqi = 300;
-      return Math.min(this.airQualityData.value / maxAqi * 100, 100);
-    }
-  }
-}
-</script>
+     airQualityPercentage() {
+    const gas = this.airQualityData.value;
+    if (this.airQualityData.status !== 'Poor') return 0;
 
+    // Escala 600–800 ppm → 0–100%
+    const min = 600;
+    const max = 800;
+    const percent = ((gas - min) / (max - min)) * 100;
+    return Math.min(Math.max(percent, 0), 100);
+  }
+  }
+};
+</script>
 
 <style scoped>
 .metric-card {

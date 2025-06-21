@@ -198,6 +198,7 @@ export default {
         const payload = {
           name: this.userData.name,
           email: this.userData.email,
+          password: null,
         };
 
         if (this.userData.password) {

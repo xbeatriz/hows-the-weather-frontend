@@ -83,8 +83,9 @@ export default {
     getTempLinePath(data) {
       const width = 600;
       const height = 200;
-      const xStep = width / (data.length - 1);
+      const xStep = width / Math.max(data.length - 1, 1);
       return data.reduce((path, point, i) => {
+        if (!point || typeof point.temp !== 'number') return path;
         const x = i * xStep;
         const y = height - (point.temp * 5);
         return path + (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
@@ -93,23 +94,30 @@ export default {
     getTempAreaPath(data) {
       const width = 600;
       const height = 200;
-      const xStep = width / (data.length - 1);
-      let path = `M 0 ${height} L 0 ${height - (data[0].temp * 5)}`;
+      const xStep = width / Math.max(data.length - 1, 1);
+      let path = `M 0 ${height}`;
       data.forEach((point, i) => {
+        if (!point || typeof point.temp !== 'number') return;
         const x = i * xStep;
         const y = height - (point.temp * 5);
         path += ` L ${x} ${y}`;
       });
-      return `${path} L ${width} ${height} Z`;
+      path += ` L ${width} ${height} Z`;
+      return path;
     },
     getTempPoints(data) {
       const width = 600;
       const height = 200;
-      const xStep = width / (data.length - 1);
-      return data.map((point, i) => ({
-        x: i * xStep,
-        y: height - (point.temp * 5)
-      }));
+      const xStep = width / Math.max(data.length - 1, 1);
+      return data
+        .map((point, i) => {
+          if (!point || typeof point.temp !== 'number') return null;
+          return {
+            x: i * xStep,
+            y: height - (point.temp * 5)
+          };
+        })
+        .filter(Boolean); // remove nulls
     }
   },
   computed: {

@@ -52,99 +52,25 @@ export default {
     humidity: {
       type: Number,
       required: false,
-      default: null
-    },
-    apiUrl: {
-      type: String,
-      required: false,
-      default: '/api/weather/humidity'
-    },
-    autoRefresh: {
-      type: Boolean,
-      default: false
-    },
-    refreshInterval: {
-      type: Number,
-      default: 60000 // 1 minute
-    }
-  },
-  data() {
-    return {
-      fetchedHumidity: null,
-      loading: false,
-      error: null,
-      lastUpdated: null,
-      refreshTimer: null
+      default: null,
     }
   },
   computed: {
     currentHumidity() {
-      // Use prop if provided, otherwise use fetched data
-      return this.humidity !== null ? this.humidity : this.fetchedHumidity;
+      return this.humidity;
     }
   },
   methods: {
     getHumidityStatus(humidity) {
+      if (humidity === null) return 'No data';
       if (humidity < 30) return 'Low - Dry air';
-      if (humidity >= 30 && humidity <= 60) return 'Good - Comfortable';
+      if (humidity <= 60) return 'Good - Comfortable';
       return 'High - Humid air';
-    },
-    async fetchHumidityData() {
-      // Skip API call if humidity is provided as a prop
-      if (this.humidity !== null) return;
-      
-      this.loading = true;
-      this.error = null;
-      
-      try {
-        const response = await fetch(this.apiUrl);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        this.fetchedHumidity = data.humidity;
-        this.lastUpdated = new Date().toLocaleTimeString();
-      } catch (err) {
-        console.error('Error fetching humidity data:', err);
-        this.error = 'Failed to load humidity data. Please try again.';
-      } finally {
-        this.loading = false;
-      }
-    },
-    setupAutoRefresh() {
-      if (this.autoRefresh && this.humidity === null) {
-        this.refreshTimer = setInterval(() => {
-          this.fetchHumidityData();
-        }, this.refreshInterval);
-      }
-    },
-    clearAutoRefresh() {
-      if (this.refreshTimer) {
-        clearInterval(this.refreshTimer);
-        this.refreshTimer = null;
-      }
-    }
-  },
-  created() {
-    if (this.humidity === null) {
-      this.fetchHumidityData();
-    }
-  },
-  mounted() {
-    this.setupAutoRefresh();
-  },
-  beforeUnmount() {
-    this.clearAutoRefresh();
-  },
-  watch: {
-    apiUrl() {
-      this.fetchHumidityData();
     }
   }
-}
+};
 </script>
+
 
 <style scoped>
 .metric-card {

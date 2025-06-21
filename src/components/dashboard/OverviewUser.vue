@@ -20,6 +20,11 @@ import HumidityCard from '@/components/weather/HumidityCard.vue';
 import AirQualityCard from '@/components/weather/AirQualityCard.vue';
 import AdditionalDataCard from '@/components/weather/AdditionalDataCard.vue';
 
+import { useSensorStore } from '@/stores/sensorStore';
+import { useUserStore } from '@/stores/userStore';
+import { storeToRefs } from 'pinia';
+import { onMounted } from 'vue';
+
 export default {
   name: 'OverviewUser',
   components: {
@@ -34,32 +39,15 @@ export default {
       selectedDate: new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
       currentDate: new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
       currentWeather: {
-        temperature: 23,
-        condition: 'sunny',
-        location: 'Lisboa',
-        humidity: 65,
+        temperature: null,
+        condition: 'Desconhecido',
+        location: '',
+        humidity: null,
       },
-      dailyTemperature: [
-        { time: '6AM', temp: 18 }, { time: '9AM', temp: 20 },
-        { time: '12PM', temp: 23 }, { time: '3PM', temp: 25 },
-        { time: '6PM', temp: 22 }, { time: '9PM', temp: 19 },
-      ],
-      weeklyTemperature: [
-        { day: 'Mon', icon: '☀️', high: 25, low: 18 },
-        { day: 'Tue', icon: '⛅', high: 24, low: 17 },
-        { day: 'Wed', icon: '☁️', high: 22, low: 16 },
-        { day: 'Thu', icon: '🌧️', high: 20, low: 15 },
-        { day: 'Fri', icon: '🌧️', high: 21, low: 16 },
-        { day: 'Sat', icon: '⛅', high: 23, low: 17 },
-        { day: 'Sun', icon: '☀️', high: 26, low: 19 },
-      ],
-      airQuality: { value: 45, status: 'Good', color: '#41B06E' },
-      airPollutants: [
-        { name: 'PM2.5', value: 12, unit: 'μg/m³', status: 'Good' },
-        { name: 'PM10', value: 24, unit: 'μg/m³', status: 'Good' },
-        { name: 'O₃', value: 85, unit: 'μg/m³', status: 'Moderate' },
-        { name: 'NO₂', value: 15, unit: 'μg/m³', status: 'Good' },
-      ],
+      dailyTemperature: [],
+      weeklyTemperature: [],
+      airQuality: { value: 0, status: 'Desconhecido', color: '#aaa' },
+      airPollutants: [],
       additionalData: {
         pressure: 1012,
         windSpeed: 12,
@@ -69,29 +57,137 @@ export default {
       },
     };
   },
+  async mounted() {
+    const sensorStore = useSensorStore();
+    const userStore = useUserStore();
+    const { sensors } = storeToRefs(sensorStore);
+    const user = userStore.user;
+
+    this.currentWeather.location = user.location || 'Desconhecido';
+
+    sensorStore.fetchSensors().then(() => {
+      const localSensors = sensors.value.filter(sensor => sensor.location === user.location);
+
+      let temperatureReadings = [];
+      let humidityReadings = [];
+      let gasReadings = [];
+
+      localSensors.forEach(sensor => {
+        const readings = sensor.readings || [];
+        if (readings.length === 0) return;
+
+        const values = readings.map(r => ({
+          timestamp: new Date(r.timestamp),
+          value: r.values[sensor.type],
+        }));
+
+        if (sensor.type === 'temperature') {
+          temperatureReadings = [...temperatureReadings, ...values];
+        } else if (sensor.type === 'humidity') {
+          humidityReadings = [...humidityReadings, ...values];
+        } else if (sensor.type === 'gas') {
+          gasReadings = [...gasReadings, ...values];
+        }
+      });
+
+      // Atualiza currentWeather com última leitura
+      if (temperatureReadings.length > 0) {
+        const latest = temperatureReadings.at(-1);
+        this.currentWeather.temperature = latest.value;
+      }
+      if (humidityReadings.length > 0) {
+        const latest = humidityReadings.at(-1);
+        this.currentWeather.humidity = latest.value;
+      }
+
+      // Mock diário com as primeiras 6 leituras de temperatura
+      this.dailyTemperature = temperatureReadings
+        .slice(0, 6)
+        .filter(r => typeof r.value === 'number')
+        .map(r => ({
+          time: this.formatTime(r.timestamp),
+          temp: r.value,
+        }));
+
+      // Mock semanal (usamos valores agrupados)
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      this.weeklyTemperature = days.map((day, i) => {
+        const tempValues = temperatureReadings.slice(i * 3, i * 3 + 3).map(r => r.value);
+        return {
+          day,
+          icon: '☀️', // ou decidir por lógica
+          high: Math.max(...tempValues, 0),
+          low: Math.min(...tempValues, 0),
+        };
+      });
+
+      // Air Quality e poluentes (simplificado)
+      if (gasReadings.length > 0) {
+        const gas = gasReadings.at(-1).value;
+        this.airQuality.value = gas;
+        if (gas <= 400) {
+          this.airQuality.status = 'Good';
+          this.airQuality.color = '#41B06E';
+        } else if (gas <= 600) {
+          this.airQuality.status = 'Moderate';
+          this.airQuality.color = '#E1C542';
+        } else {
+          this.airQuality.status = 'Poor';
+          this.airQuality.color = '#FF4C4C';
+        }
+
+
+        this.airPollutants = [
+          {
+            name: 'Gas',
+            value: gas,
+            unit: 'ppm',
+            status: this.airQuality.status,
+          },
+          {
+            name: 'PM2.5',
+            value: Math.round((gas - 200) / 3), // mapeia 200–800 → ~0–200 µg/m³
+            unit: 'μg/m³',
+            status: this.airQuality.status,
+          },
+        ];
+      }
+    });
+  },
   methods: {
+    formatTime(timestamp) {
+    if (!(timestamp instanceof Date)) {
+      timestamp = new Date(timestamp);
+      if (isNaN(timestamp)) return 'Invalid date';
+    }
+    return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+  },
     prevDay() {
       console.log('Dia anterior');
-      // Atualiza selectedDate conforme necessidade
     },
     nextDay() {
       console.log('Próximo dia');
-      // Atualiza selectedDate conforme necessidade
     },
   },
 };
 </script>
+
 <style scoped>
 .cards-container {
   display: flex;
-  flex-wrap: wrap;       /* Permite quebra de linha em telas menores */
-  gap: 20px;             /* Espaçamento entre cards */
-  justify-content: center; /* Centraliza horizontalmente (opcional) */
+  flex-wrap: wrap;
+  /* Permite quebra de linha em telas menores */
+  gap: 20px;
+  /* Espaçamento entre cards */
+  justify-content: center;
+  /* Centraliza horizontalmente (opcional) */
 }
 
 /* Opcional: definir tamanho máximo para os cards para controlar layout */
-.cards-container > * {
-  flex: 1 1 250px;       /* Crescem e encolhem, largura base 250px */
-  min-width: 250px;      /* Largura mínima para cada card */
+.cards-container>* {
+  flex: 1 1 250px;
+  /* Crescem e encolhem, largura base 250px */
+  min-width: 250px;
+  /* Largura mínima para cada card */
 }
 </style>

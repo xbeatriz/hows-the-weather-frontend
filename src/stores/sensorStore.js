@@ -9,7 +9,7 @@ export const useSensorStore = defineStore('sensorStore', {
   }),
 
   actions: {
-    async fetchSensors(token) {
+    async fetchSensors() {
       this.loading = true;
       this.error = null;
 
@@ -18,7 +18,6 @@ export const useSensorStore = defineStore('sensorStore', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
           }
         });
 
@@ -36,7 +35,6 @@ export const useSensorStore = defineStore('sensorStore', {
         this.loading = false;
       }
     },
-
     clearSensors() {
       this.sensors = [];
       this.error = null;

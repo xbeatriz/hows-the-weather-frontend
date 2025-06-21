@@ -33,6 +33,9 @@
             </td>
             <td>
               <div class="action-buttons">
+                <button class="info-btn" @click="viewUser(user)" title="View Info">
+                  <i class="fas fa-eye"></i>
+                </button>
                 <button class="edit-btn" @click="editUser(user)" title="Edit">
                   <i class="fas fa-edit"></i>
                 </button>
@@ -58,6 +61,21 @@
       <button class="page-btn" :disabled="currentPage === totalPages" @click="currentPage++">
         <i class="fas fa-chevron-right"></i>
       </button>
+    </div>
+    <!-- Modal View User Info -->
+    <div v-if="showInfoModal" class="modal-overlay" @click.self="showInfoModal = false">
+      <div class="modal-content">
+        <h3>Detalhes do Usuário</h3>
+        <p><strong>Nome:</strong> {{ selectedUser?.name }}</p>
+        <p><strong>Email:</strong> {{ selectedUser?.email }}</p>
+        <p><strong>Localização:</strong> {{ selectedUser?.location }}</p>
+        <p><strong>Tipo:</strong> {{ selectedUser?.role }}</p>
+        <p><strong>ID:</strong> {{ selectedUser?.id || selectedUser?._id }}</p>
+
+        <div class="modal-actions">
+          <button class="cancel-btn" @click="showInfoModal = false">Fechar</button>
+        </div>
+      </div>
     </div>
 
     <!-- Modal Edit User -->
@@ -120,7 +138,8 @@ const itemsPerPage = 10
 
 const showEditModal = ref(false)
 const isCreating = ref(false)
-
+const showInfoModal = ref(false)
+const selectedUser = ref(null)
 const editForm = ref({
   id: '',
   name: '',
@@ -129,7 +148,10 @@ const editForm = ref({
   role: 'Normal',
 })
 
-
+function viewUser(user) {
+  selectedUser.value = user
+  showInfoModal.value = true
+}
 // Carregar dados (simples, substitua pelo fetch real se tiver API)
 async function fetchUsers() {
   try {
@@ -542,5 +564,23 @@ tbody td {
 
 .cancel-btn:hover {
   background-color: #c0392b;
+}
+
+.info-btn {
+  background-color: #f8f9fa;
+  color: #2c3e50;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-btn:hover {
+  background-color: #d9dc2f;
+  color: white;
 }
 </style>
