@@ -108,7 +108,13 @@ export default {
           throw new Error(result.message || 'Login failed');
         }
 
-  userStore.setUserData(data.user, data.accessToken, data.refreshToken, rememberMe.value);
+        userStore.setUserData(result.data.user, result.accessToken, result.refreshToken);
+
+        if (this.rememberMe) {
+          localStorage.setItem('accesstoken', userStore.accessToken);
+          localStorage.setItem('refreshtoken', userStore.refreshToken);
+          localStorage.setItem('user', JSON.stringify(userStore.user));
+        }
 
         if (userStore.user.role === 'admin') {
           this.$router.push('/dashboard');

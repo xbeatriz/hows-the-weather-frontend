@@ -17,17 +17,12 @@ export const useUserStore = defineStore('userStore', {
       if (storedAccessToken) this.accessToken = storedAccessToken;
       if (storedRefreshToken) this.refreshToken = storedRefreshToken;
     },
-    setUserData(user, accessToken, refreshToken, rememberMe = false) {
-  this.user = user;
-  this.accessToken = accessToken;
-  this.refreshToken = refreshToken;
+    setUserData(user, accessToken, refreshToken) {
+      this.user = user;
+      this.accessToken = accessToken;
+      this.refreshToken = refreshToken;
+    },
 
-  if (rememberMe) {
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
-  }
-},
     logout() {
       this.user = null;
       this.accessToken = '';
