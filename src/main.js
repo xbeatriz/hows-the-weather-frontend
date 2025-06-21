@@ -5,17 +5,16 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
-import { useUserStore } from './stores/userStore'  // importa o userStore aqui
+import { useUserStore } from '@/stores/userStore';
 
 const app = createApp(App)
 
-// Create a simple icon component as a temporary replacement for Font Awesome
+// Ícones simulados
 app.component('font-awesome-icon', {
   props: ['icon'],
   template: `<span class="icon-placeholder">{{ icon[1] }}</span>`,
 })
 
-// Temporary solution until Font Awesome is installed
 const iconClasses = {
   'fa-users': 'users',
   'fa-microchip': 'microchip',
@@ -47,8 +46,9 @@ app.mixin({
 
 const pinia = createPinia()
 app.use(pinia)
+
+const userStore = useUserStore();
+userStore.loadFromStorage();
+
 app.use(router)
-
-
 app.mount('#app')
-
