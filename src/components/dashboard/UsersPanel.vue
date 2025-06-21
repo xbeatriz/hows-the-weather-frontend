@@ -157,7 +157,7 @@ async function fetchUsers() {
   try {
     // Aqui, idealmente, chama API para buscar users
     // Exemplo:
-    const res = await fetch('https://hows-the-weather-backend.onrender.com//api/user', {
+    const res = await fetch('https://hows-the-weather-backend.onrender.com/api/user', {
       headers: {
         Authorization: `Bearer ${userStore.accessToken}`
       }
@@ -187,7 +187,6 @@ const paginatedUsers = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   return filteredUsers.value.slice(start, start + itemsPerPage)
 })
-console.log(filteredUsers.value)
 // Resetar página ao alterar pesquisa para evitar página inválida
 watch(searchQuery, () => {
   currentPage.value = 1
@@ -225,8 +224,8 @@ function closeModal() {
 async function submitUserForm() {
   try {
     const url = isCreating.value
-      ? 'https://hows-the-weather-backend.onrender.com//api/user/register' // endpoint para criar novo user
-      : `https://hows-the-weather-backend.onrender.com//api/user/${editForm.value.id}` // para editar
+      ? 'https://hows-the-weather-backend.onrender.com/api/user/register' // endpoint para criar novo user
+      : `https://hows-the-weather-backend.onrender.com/api/user/${editForm.value.id}` // para editar
 
     const method = isCreating.value ? 'POST' : 'PATCH'
 
@@ -275,7 +274,7 @@ async function deleteUser(user) {
   if (!confirm('Tem certeza que deseja apagar este usuário?')) return
 
   try {
-    const res = await fetch(`https://hows-the-weather-backend.onrender.com//api/user/${user.id || user._id}`, {
+    const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/user/${user.id || user._id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${userStore.accessToken}`

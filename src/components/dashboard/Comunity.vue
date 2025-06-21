@@ -54,7 +54,11 @@
             <span>🕒 {{ post.timestamp ? new Date(post.timestamp).toLocaleString() : 'Sem data' }}</span>
             <span>🏷️ Tags: <span class="text-gray-800">{{ post.tags?.join(', ') || 'Nenhuma' }}</span></span>
             <span>👍 Likes: <span class="text-gray-800">{{ post.likes?.length || 0 }}</span></span>
-            <!-- Botão de like -->
+            <!-- Botão de eliminar post (visível se for o autor ou admin) -->
+            <button v-if="post.user_id === userId" @click="deletePost(post._id)"
+              class="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded text-sm mt-2">
+              🗑️ Eliminar post
+            </button>
             <!-- Mostrar botão de like apenas se o user ainda não tiver dado like -->
             <button v-if="!post.likes.includes(userId)" @click="likePost(post._id)" class="like-button">
               👍 Like
@@ -138,6 +142,29 @@ const refreshPosts = async () => {
     console.error('Erro ao atualizar posts:', err);
   }
 };
+async function deletePost(postId) {
+  if (!confirm('Tem a certeza que deseja apagar esta publicação?')) return;
+
+  try {
+    const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${props.community._id}/posts/${postId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${userStore.accessToken}`,
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Erro ao eliminar publicação');
+    }
+
+    alert('Publicação eliminada com sucesso!');
+    await refreshPosts();
+  } catch (err) {
+    console.error('Erro ao apagar publicação:', err);
+    alert('Erro ao apagar publicação: ' + err.message);
+  }
+}
 
 async function likePost(postId) {
   try {

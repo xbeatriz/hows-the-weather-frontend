@@ -1,10 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <Sidebar
-      :activeMenu="activeMenu"
-      @menuChange="handleMenuChange"
-      @logout="handleLogout"
-    />
+    <Sidebar :activeMenu="activeMenu" @menuChange="handleMenuChange" @logout="handleLogout" />
     <div class="dashboard-content">
       <div class="content-header">
         <h1>{{ pageTitle }}</h1>
@@ -28,37 +24,16 @@
       <component :is="currentComponent" :data="componentData" />
 
       <!-- Modais -->
-      <Modal
-        v-if="showCreateUser"
-        title="Criar Novo Utilizador"
-        @close="showCreateUser = false"
-      >
-        <CreateUserForm
-          @submitted="onFormSubmitted"
-          @cancel="showCreateUser = false"
-        />
+      <Modal v-if="showCreateUser" title="Criar Novo Utilizador" @close="showCreateUser = false">
+        <CreateUserForm @submitted="onFormSubmitted" @cancel="showCreateUser = false" />
       </Modal>
 
-      <Modal
-        v-if="showCreateSensor"
-        title="Criar Novo Sensor"
-        @close="showCreateSensor = false"
-      >
-        <CreateSensorForm
-          @submitted="onFormSubmitted"
-          @cancel="showCreateSensor = false"
-        />
+      <Modal v-if="showCreateSensor" title="Criar Novo Sensor" @close="showCreateSensor = false">
+        <CreateSensorForm @submitted="onFormSubmitted" @cancel="showCreateSensor = false" />
       </Modal>
 
-      <Modal
-        v-if="showCreateCommunity"
-        title="Criar Nova Comunidade"
-        @close="showCreateCommunity = false"
-      >
-        <CreateCommunityForm
-          @submitted="onFormSubmitted"
-          @cancel="showCreateCommunity = false"
-        />
+      <Modal v-if="showCreateCommunity" title="Criar Nova Comunidade" @close="showCreateCommunity = false">
+        <CreateCommunityForm @submitted="onFormSubmitted" @cancel="showCreateCommunity = false" />
       </Modal>
     </div>
   </div>
@@ -315,6 +290,7 @@ export default {
   padding: 0;
   box-sizing: border-box;
 }
+
 .dashboard-container {
   display: flex;
   height: 100vh;

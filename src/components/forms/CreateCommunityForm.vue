@@ -37,7 +37,7 @@ export default {
   methods: {
     async createCommunity() {
       const token = useUserStore().accessToken;
-      const res = await fetch('https://hows-the-weather-backend.onrender.com//api/communities', {
+      const res = await fetch('https://hows-the-weather-backend.onrender.com/api/communities', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -108,7 +108,7 @@ export default {
       const token = useUserStore().accessToken;
       this.form.timestamp = new Date().toISOString();
       try {
-        const res = await fetch(`https://hows-the-weather-backend.onrender.com//api/communities/${this.communityId}/posts`, {
+        const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${this.communityId}/posts`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,

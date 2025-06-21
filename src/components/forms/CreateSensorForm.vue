@@ -59,7 +59,7 @@ export default {
   methods: {
     async createSensor() {
       const token = useUserStore().accessToken;
-      const res = await fetch('https://hows-the-weather-backend.onrender.com//api/sensors', {
+      const res = await fetch('https://hows-the-weather-backend.onrender.com/api/sensors', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

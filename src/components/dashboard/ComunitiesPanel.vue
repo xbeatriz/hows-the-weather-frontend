@@ -87,6 +87,9 @@
             <p><strong>Description:</strong> {{ post.description }}</p>
             <p><strong>Tags:</strong> {{ post.tags?.join(', ') }}</p>
             <p><strong>Status:</strong> {{ post.status }}</p>
+            <button class="delete-post-btn" @click="deletePost(selectedCommunity._id, post._id)">
+              <i class="fas fa-trash-alt"></i> Eliminar Post
+            </button>
             <hr />
           </li>
           <li v-if="!selectedCommunity.community_posts || selectedCommunity.community_posts.length === 0">
@@ -101,15 +104,8 @@
     </div>
 
     <!-- Modal externo para criar comunidade -->
-    <Modal
-      v-if="showCreateModal"
-      title="Create New Community"
-      @close="showCreateModal = false"
-    >
-      <CreateCommunityForm
-        @submitted="onCommunityCreated"
-        @cancel="() => (showCreateModal = false)"
-      />
+    <Modal v-if="showCreateModal" title="Create New Community" @close="showCreateModal = false">
+      <CreateCommunityForm @submitted="onCommunityCreated" @cancel="() => (showCreateModal = false)" />
     </Modal>
   </div>
 </template>
@@ -151,7 +147,28 @@ onMounted(async () => {
   await communityStore.fetchAllCommunities(userStore.accessToken)
   communities.value = communityStore.communities || []
 })
+const deletePost = async (communityId, postId) => {
+  if (!confirm('Tens a certeza que queres eliminar este post?')) return;
+  try {
+    const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${communityId}/posts/${postId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${userStore.accessToken}`
+      }
+    });
+    if (!res.ok) throw new Error('Erro ao eliminar o post');
 
+    alert('Post eliminado com sucesso!');
+    // Atualiza os dados da comunidade
+    await communityStore.fetchAllCommunities(userStore.accessToken);
+    communities.value = communityStore.communities || [];
+
+    // Atualiza a comunidade selecionada se ainda estiver aberta
+    selectedCommunity.value = communities.value.find(c => c._id === communityId);
+  } catch (err) {
+    alert('Erro: ' + err.message);
+  }
+};
 const viewCommunity = (communityId) => {
   const community = communities.value.find(c => c._id === communityId)
   if (!community) return
@@ -219,7 +236,21 @@ const onCommunityCreated = (newCommunity) => {
 
 
 <style scoped>
-/* Mesmos estilos adaptados do seu código original */
+.delete-post-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.delete-post-btn:hover {
+  background-color: #c0392b;
+}
+
 .communities-panel {
   display: flex;
   flex-direction: column;
@@ -387,7 +418,7 @@ tbody td {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
