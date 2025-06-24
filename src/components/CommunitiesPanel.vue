@@ -2,11 +2,11 @@
   <div class="communities-panel">
     <div class="panel-actions">
       <div class="search-bar">
-        <input type="text" placeholder="Search communities..." v-model="searchQuery">
+        <input type="text" placeholder="Procurar comunidades..." v-model="searchQuery">
         <i class="fas fa-search"></i>
       </div>
       <button class="add-btn">
-        <i class="fas fa-plus"></i> Create New Community
+        <i class="fas fa-plus"></i> Criar Nova Comunidade
       </button>
     </div>
     
@@ -15,10 +15,10 @@
         <div class="community-header">
           <h3>{{ community.name }}</h3>
           <div class="community-actions">
-            <button class="edit-btn" title="Edit">
+            <button class="edit-btn" title="Editar">
               <i class="fas fa-edit"></i>
             </button>
-            <button class="delete-btn" title="Delete">
+            <button class="delete-btn" title="Eliminar">
               <i class="fas fa-trash"></i>
             </button>
           </div>
@@ -26,7 +26,7 @@
         <div class="community-stats">
           <div class="stat">
             <i class="fas fa-users"></i>
-            <span>{{ community.members }} Members</span>
+            <span>{{ community.members }} Membros</span>
           </div>
           <div class="stat">
             <i class="fas fa-map-marker-alt"></i>
@@ -34,30 +34,30 @@
           </div>
         </div>
         <div class="community-description">
-          <p>{{ community.description || 'No description available for this community.' }}</p>
+          <p>{{ community.description || 'Sem descrição disponível para esta comunidade.' }}</p>
         </div>
-        <button class="view-details-btn">View Details</button>
+        <button class="view-details-btn">Ver Detalhes</button>
       </div>
       
       <div v-if="filteredCommunities.length === 0" class="no-results">
-        <p>No communities found</p>
+        <p>Nenhuma comunidade encontrada</p>
       </div>
     </div>
     
     <div class="communities-stats-section">
-      <h3>Communities Overview</h3>
+      <h3>Resumo das Comunidades</h3>
       <div class="stats-cards">
         <div class="stat-card">
-          <h4>Total Communities</h4>
+          <h4>Total de Comunidades</h4>
           <p>{{ data.communities?.length || 0 }}</p>
         </div>
         <div class="stat-card">
-          <h4>Total Members</h4>
+          <h4>Total de Membros</h4>
           <p>{{ totalMembers }}</p>
         </div>
         <div class="stat-card">
-          <h4>Most Active Region</h4>
-          <p>{{ mostActiveRegion || 'N/A' }}</p>
+          <h4>Região Mais Ativa</h4>
+          <p>{{ mostActiveRegion || 'N/D' }}</p>
         </div>
       </div>
     </div>

@@ -1,55 +1,55 @@
 <template>
   <div class="overview-panel">
-    <!-- Stats Cards -->
+    <!-- Cartões de estatísticas -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon users-icon">
           <i class="fas fa-users"></i>
         </div>
         <div class="stat-info">
-          <h3>Users</h3>
+          <h3>Utilizadores</h3>
           <p class="stat-value">{{ data.stats?.users || 0 }}</p>
-          <p class="stat-desc">Total registered users</p>
+          <p class="stat-desc">Total de utilizadores registados</p>
         </div>
       </div>
-      
+
       <div class="stat-card">
         <div class="stat-icon sensors-icon">
           <i class="fas fa-microchip"></i>
         </div>
         <div class="stat-info">
-          <h3>Sensors</h3>
+          <h3>Sensores</h3>
           <p class="stat-value">{{ data.stats?.sensors || 0 }}</p>
-          <p class="stat-desc">Total deployed sensors</p>
+          <p class="stat-desc">Sensores instalados</p>
         </div>
       </div>
-      
+
       <div class="stat-card">
         <div class="stat-icon communities-icon">
           <i class="fas fa-city"></i>
         </div>
         <div class="stat-info">
-          <h3>Communities</h3>
+          <h3>Comunidades</h3>
           <p class="stat-value">{{ data.stats?.communities || 0 }}</p>
-          <p class="stat-desc">Active communities</p>
+          <p class="stat-desc">Comunidades ativas</p>
         </div>
       </div>
-      
+
       <div class="stat-card">
         <div class="stat-icon active-icon">
           <i class="fas fa-signal"></i>
         </div>
         <div class="stat-info">
-          <h3>Active Sensors</h3>
+          <h3>Sensores Ativos</h3>
           <p class="stat-value">{{ data.stats?.activeSensors || 0 }}</p>
-          <p class="stat-desc">Currently online</p>
+          <p class="stat-desc">Atualmente ativos</p>
         </div>
       </div>
     </div>
-    
-    <!-- Recent Activity -->
+
+    <!-- Atividade Recente -->
     <div class="activity-section">
-      <h2>Recent Activity</h2>
+      <h2>Atividade Recente</h2>
       <div class="activity-list">
         <div v-for="(activity, index) in data.recentActivity" :key="index" class="activity-item">
           <div class="activity-icon" :class="getActivityIconClass(activity.type)">
@@ -63,11 +63,11 @@
       </div>
     </div>
 
-    <!-- Charts would go here in a real implementation -->
+    <!-- Gráficos -->
     <div class="charts-section">
-      <h2>Weather Sensor Data</h2>
+      <h2>Dados dos Sensores Meteorológicos</h2>
       <div class="chart-placeholder">
-        <p>Weather data visualization charts would be displayed here.</p>
+        <p>Os gráficos de visualização de dados meteorológicos serão apresentados aqui.</p>
       </div>
     </div>
   </div>

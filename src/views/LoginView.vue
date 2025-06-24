@@ -4,34 +4,34 @@
     <div class="login-container">
       <div class="login-card">
         <div class="login-form-section">
-          <h1>Login</h1>
-          <p class="subtitle">Doesn't have an account yet? <router-link to="/signup">Sign Up</router-link></p>
+          <h1>Iniciar Sessão</h1>
+          <p class="subtitle">Ainda não tens uma conta? <router-link to="/signup">Regista-te</router-link></p>
 
           <div class="form-group">
-            <label for="email">Email Address</label>
-            <input type="email" id="email" v-model="email" placeholder="you@example.com"
+            <label for="email">Endereço de Email</label>
+            <input type="email" id="email" v-model="email" placeholder="teuemail@exemplo.com"
               :class="{ 'input-error': errors.email }">
             <span class="error-message" v-if="errors.email">{{ errors.email }}</span>
           </div>
 
           <div class="form-group">
             <div class="password-header">
-              <label for="password">Password</label>
-              <a href="#" class="forgot-link">Forgot Password?</a>
+              <label for="password">Palavra-passe</label>
+              <a href="#" class="forgot-link">Esqueceste-te da palavra-passe?</a>
             </div>
-            <input type="password" id="password" v-model="password" placeholder="Enter 6 character or more"
+            <input type="password" id="password" v-model="password" placeholder="Insere 6 ou mais caracteres"
               :class="{ 'input-error': errors.password }">
             <span class="error-message" v-if="errors.password">{{ errors.password }}</span>
           </div>
 
           <div class="remember-me">
             <input type="checkbox" id="remember" v-model="rememberMe">
-            <label for="remember">Remember me</label>
+            <label for="remember">Lembrar-me</label>
           </div>
 
           <button @click="login" class="login-button" :disabled="isLoading">
-            <span v-if="!isLoading">LOGIN</span>
-            <span v-else>LOGGING IN...</span>
+            <span v-if="!isLoading">ENTRAR</span>
+            <span v-else>A ENTRAR...</span>
           </button>
         </div>
 
@@ -71,20 +71,17 @@ export default {
       this.errors.password = '';
 
       if (!this.email) {
-        this.errors.email = 'Email is required';
-        isValid = false;
+        this.errors.email = 'O email é obrigatório';
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
-        this.errors.email = 'Please enter a valid email address';
-        isValid = false;
+        this.errors.email = 'Por favor insere um email válido';
       }
 
       if (!this.password) {
-        this.errors.password = 'Password is required';
-        isValid = false;
+        this.errors.password = 'A palavra-passe é obrigatória';
       } else if (this.password.length < 6) {
-        this.errors.password = 'Password must be at least 6 characters';
-        isValid = false;
+        this.errors.password = 'A palavra-passe deve ter pelo menos 6 caracteres';
       }
+
 
       return isValid;
     },

@@ -1,8 +1,8 @@
 <template>
   <div class="weather-card current-weather-card">
     <div class="card-header">
-      <h3>Current Weather</h3>
-      <span class="location-badge">{{ weather.location || 'Loading...' }}</span>
+      <h3>Clima Atual</h3>
+      <span class="location-badge">{{ weather.location || 'A carregar...' }}</span>
     </div>
 
     <div class="card-content">
@@ -50,7 +50,7 @@
 
       <div class="temperature-display">
         <span class="temperature-value">{{ weather.temperature }}°</span>
-        <span class="temperature-unit">C</span>
+        <span class="temperature-unit">Cº</span>
       </div>
 
       <div class="weather-status">{{ getWeatherStatus(weather.condition) }}</div>
@@ -72,7 +72,7 @@ export default {
   },
   computed: {
     formattedDate() {
-      return new Date().toLocaleDateString('en-US', {
+      return new Date().toLocaleDateString('pt-PT', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -83,14 +83,15 @@ export default {
   methods: {
     getWeatherStatus(condition) {
       const statuses = {
-        sunny: 'Clear sky',
-        cloudy: 'Cloudy',
-        rainy: 'Rainy',
-        default: 'Partly cloudy'
+        sunny: 'Céu limpo',
+        cloudy: 'Nublado',
+        rainy: 'Chuva',
+        default: 'Parcialmente nublado'
       };
       return statuses[condition] || statuses.default;
     }
   }
+
 }
 </script>
 

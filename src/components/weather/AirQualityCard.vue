@@ -1,7 +1,7 @@
 <template>
   <div class="metric-card air-quality-card">
     <div class="card-header">
-      <h3>Air Quality</h3>
+      <h3>Qualidade do Ar</h3>
       <div class="metric-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -23,36 +23,38 @@
     <div class="card-content">
       <div class="air-quality-meter">
         <div class="meter-labels">
-          <span>Good</span>
-          <span>Moderate</span>
-          <span>Unhealthy</span>
+          <span>Boa</span>
+          <span>Moderada</span>
+          <span>Má</span>
         </div>
         <div class="meter-bar">
-          <div class="meter-fill" :style="airQualityData.status === 'Poor'
+          <div class="meter-fill" :style="airQualityData.status === 'Má'
             ? { width: `${airQualityPercentage}%`, backgroundColor: airQualityData.color }
             : { width: '0%' }"></div>
           <div class="meter-marker" :style="{ left: `${airQualityPercentage}%` }"></div>
         </div>
-
       </div>
       <div class="air-quality-details">
-        <div class="aqi-value">AQI: <strong>{{ airQualityData.value }}</strong></div>
-        <div class="aqi-status" :style="{ color: airQualityData.color }">{{ airQualityData.status }}</div>
+        <div class="aqi-value">IQAr: <strong>{{ airQualityData.value }}</strong></div>
+        <div class="aqi-status" :style="{ color: airQualityData.color }">{{ traduzirEstado(airQualityData.status) }}
+        </div>
       </div>
       <div class="pollutants-table">
         <table>
           <thead>
             <tr>
-              <th>Pollutant</th>
-              <th>Value</th>
-              <th>Status</th>
+              <th>Poluente</th>
+              <th>Valor</th>
+              <th>Estado</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(pollutant, index) in airPollutantsData" :key="'pollutant-' + index">
               <td>{{ pollutant.name }}</td>
               <td>{{ pollutant.value }} {{ pollutant.unit }}</td>
-              <td :class="'status-' + pollutant.status.toLowerCase()">{{ pollutant.status }}</td>
+              <td :class="'status-' + pollutant.status.toLowerCase()">
+                {{ traduzirEstado(pollutant.status) }}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -75,16 +77,28 @@ export default {
     }
   },
   computed: {
-     airQualityPercentage() {
-    const gas = this.airQualityData.value;
-    if (this.airQualityData.status !== 'Poor') return 0;
+    airQualityPercentage() {
+      const gas = this.airQualityData.value;
+      if (this.airQualityData.status !== 'Má') return 0;
 
-    // Escala 600–800 ppm → 0–100%
-    const min = 600;
-    const max = 800;
-    const percent = ((gas - min) / (max - min)) * 100;
-    return Math.min(Math.max(percent, 0), 100);
-  }
+      const min = 600;
+      const max = 800;
+      const percent = ((gas - min) / (max - min)) * 100;
+      return Math.min(Math.max(percent, 0), 100);
+    }
+  },
+  methods: {
+    traduzirEstado(status) {
+      const traducoes = {
+        Good: 'Boa',
+        Moderate: 'Moderada',
+        Poor: 'Má',
+        Unhealthy: 'Prejudicial',
+        'Very Unhealthy': 'Muito Prejudicial',
+        Hazardous: 'Perigosa'
+      };
+      return traducoes[status] || status;
+    }
   }
 };
 </script>

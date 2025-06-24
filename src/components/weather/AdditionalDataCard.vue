@@ -1,7 +1,7 @@
 <template>
   <div class="weather-data-card">
     <div class="card-header">
-      <h3>Additional Weather Data</h3>
+      <h3>Dados Meteorológicos Adicionais</h3>
       <div class="date-selector">
         <button @click="prevDay" class="date-nav-btn" :disabled="loading"><span>&lt;</span></button>
         <span class="selected-date">{{ selectedDate }}</span>
@@ -12,29 +12,28 @@
       <div class="data-tiles">
         <div class="data-tile">
           <div class="tile-icon">...</div>
-          <div class="tile-label">Pressure</div>
+          <div class="tile-label">Pressão</div>
           <div class="tile-value">{{ data.pressure }} hPa</div>
         </div>
         <div class="data-tile">
           <div class="tile-icon">...</div>
-          <div class="tile-label">Wind</div>
+          <div class="tile-label">Vento</div>
           <div class="tile-value">{{ data.windSpeed }} km/h</div>
           <div class="tile-subtitle">{{ data.windDirection }}</div>
         </div>
         <div class="data-tile">
           <div class="tile-icon">...</div>
-          <div class="tile-label">Precipitation</div>
+          <div class="tile-label">Precipitação</div>
           <div class="tile-value">{{ data.precipitation }} mm</div>
         </div>
         <div class="data-tile">
           <div class="tile-icon">...</div>
-          <div class="tile-label">UV Index</div>
+          <div class="tile-label">Índice UV</div>
           <div class="tile-value">{{ data.uvIndex }}</div>
           <div class="tile-subtitle">{{ getUVStatus(data.uvIndex) }}</div>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -53,11 +52,11 @@ export default {
   },
   methods: {
     getUVStatus(index) {
-      if (index <= 2) return 'Low';
-      if (index <= 5) return 'Moderate';
-      if (index <= 7) return 'High';
-      if (index <= 10) return 'Very High';
-      return 'Extreme';
+      if (index <= 2) return 'Baixo';
+      if (index <= 5) return 'Moderado';
+      if (index <= 7) return 'Elevado';
+      if (index <= 10) return 'Muito Elevado';
+      return 'Extremo';
     },
     prevDay() {
       this.$emit('prev-day');

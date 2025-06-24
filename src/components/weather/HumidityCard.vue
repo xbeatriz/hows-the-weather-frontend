@@ -1,7 +1,7 @@
 <template>
   <div class="metric-card humidity-card">
     <div class="card-header">
-      <h3>Humidity</h3>
+      <h3>Humidade</h3>
       <div class="metric-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path>
@@ -9,41 +9,40 @@
         </svg>
       </div>
     </div>
+
     <div class="card-content" v-if="loading">
       <div class="loading-spinner">
         <div class="spinner"></div>
-        <p>Loading humidity data...</p>
+        <p>A carregar dados de humidade...</p>
       </div>
     </div>
+
     <div class="card-content" v-else-if="error">
       <div class="error-message">
         <p>{{ error }}</p>
-        <button @click="fetchHumidityData" class="retry-button">Retry</button>
+        <button @click="fetchHumidityData" class="retry-button">Tentar novamente</button>
       </div>
     </div>
+
     <div class="card-content" v-else>
       <div class="circular-progress-container">
         <div class="circular-progress">
           <svg viewBox="0 0 100 100">
-            <!-- Background circle -->
             <circle cx="50" cy="50" r="45" fill="none" stroke="#e2e8f0" stroke-width="8" />
-            
-            <!-- Progress circle -->
             <circle cx="50" cy="50" r="45" fill="none" stroke="#0ea5e9" stroke-width="8" stroke-dasharray="283" 
               :stroke-dashoffset="283 - (283 * currentHumidity) / 100" transform="rotate(-90 50 50)" />
-            
-            <!-- Percentage text -->
             <text x="50" y="50" text-anchor="middle" dy="7" font-size="24" font-weight="bold" fill="#1e293b">{{ currentHumidity }}%</text>
           </svg>
         </div>
       </div>
       <div class="humidity-status">{{ getHumidityStatus(currentHumidity) }}</div>
       <div class="last-updated" v-if="lastUpdated">
-        Last updated: {{ lastUpdated }}
+        Última atualização: {{ lastUpdated }}
       </div>
     </div>
   </div>
 </template>
+
 
 <script>
 export default {
@@ -62,10 +61,10 @@ export default {
   },
   methods: {
     getHumidityStatus(humidity) {
-      if (humidity === null) return 'No data';
-      if (humidity < 30) return 'Low - Dry air';
-      if (humidity <= 60) return 'Good - Comfortable';
-      return 'High - Humid air';
+      if (humidity === null) return 'Sem dados';
+      if (humidity < 30) return 'Baixa – Ar seco';
+      if (humidity <= 60) return 'Boa – Confortável';
+      return 'Alta – Ar húmido';
     }
   }
 };

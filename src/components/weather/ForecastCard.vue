@@ -3,8 +3,8 @@
     <div class="card-header">
       <h3>{{ dynamicTitle }}</h3>
       <div class="view-toggle">
-        <button :class="{ active: activeView === 'daily' }" @click="activeView = 'daily'">Daily</button>
-        <button :class="{ active: activeView === 'weekly' }" @click="activeView = 'weekly'">Weekly</button>
+        <button :class="{ active: activeView === 'daily' }" @click="activeView = 'daily'">Diária</button>
+        <button :class="{ active: activeView === 'weekly' }" @click="activeView = 'weekly'">Semanal</button>
       </div>
     </div>
     <div class="card-content">
@@ -40,10 +40,10 @@
         <table class="forecast-table">
           <thead>
             <tr>
-              <th>Day</th>
-              <th>Condition</th>
-              <th>High</th>
-              <th>Low</th>
+              <th>Dia</th>
+              <th>Condição</th>
+              <th>Máxima</th>
+              <th>Mínima</th>
             </tr>
           </thead>
           <tbody>
@@ -122,9 +122,10 @@ export default {
   },
   computed: {
     dynamicTitle() {
-      return this.activeView === 'daily' ? 'Temperaturas diárias' : 'Previsão semanal';
+      return this.activeView === 'daily' ? 'Previsão Diária de Temperatura' : 'Previsão Semanal';
     }
   }
+
 };
 
 </script>

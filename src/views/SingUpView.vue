@@ -4,30 +4,26 @@
     <div class="login-container">
       <div class="login-card">
         <div class="login-form-section">
-          <h1>Sign Up</h1>
+          <h1>Registar</h1>
           <p class="subtitle">
-            Already have an account?
-            <router-link to="/login">Login</router-link>
+            Já tens uma conta?
+            <router-link to="/login">Iniciar Sessão</router-link>
           </p>
 
           <div class="form-group">
-            <label for="name">Full Name</label>
-            <input type="text" id="name" v-model="name" placeholder="John Doe" />
+            <label for="name">Nome Completo</label>
+            <input type="text" id="name" v-model="name" placeholder="João Silva" />
           </div>
 
           <div class="form-group">
-            <label for="email">Email Address</label>
-            <input
-              type="email"
-              id="email"
-              v-model="email"
-              placeholder="you@example.com"
-            />
+            <label for="email">Endereço de Email</label>
+            <input type="email" id="email" v-model="email" placeholder="teuemail@exemplo.com" />
           </div>
+
           <div class="form-group">
             <label for="location">Localização</label>
             <select id="location" v-model="location">
-              <option value="" disabled>Selecione sua localização</option>
+              <option value="" disabled>Seleciona a tua localização</option>
               <option value="Lisboa">Lisboa</option>
               <option value="Porto">Porto</option>
               <option value="Coimbra">Coimbra</option>
@@ -35,35 +31,23 @@
               <option value="Braga">Braga</option>
             </select>
           </div>
+
           <div class="form-group">
-            <label for="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              v-model="password"
-              placeholder="Enter 6 character or more"
-            />
+            <label for="password">Palavra-passe</label>
+            <input type="password" id="password" v-model="password" placeholder="Insere 6 ou mais caracteres" />
           </div>
 
           <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              v-model="confirmPassword"
-              placeholder="Repeat your password"
-            />
+            <label for="confirmPassword">Confirmar Palavra-passe</label>
+            <input type="password" id="confirmPassword" v-model="confirmPassword"
+              placeholder="Repete a tua palavra-passe" />
           </div>
 
-          <button @click="signUp" class="login-button">SIGN UP</button>
+          <button @click="signUp" class="login-button">REGISTAR</button>
         </div>
 
         <div class="login-image-section">
-          <img
-            src="@/assets/undraw_weather.svg"
-            alt="Sign Up"
-            class="login-illustration"
-          />
+          <img src="@/assets/undraw_weather.svg" alt="Registo" class="login-illustration" />
         </div>
       </div>
     </div>
@@ -91,8 +75,8 @@ export default {
   methods: {
     async signUp() {
       if (this.password !== this.confirmPassword) {
-        alert('Passwords do not match!')
-        return
+        alert('As palavras-passe não coincidem!');
+        return;
       }
 
       try {
@@ -115,8 +99,7 @@ export default {
           return
         }
 
-        alert('Registo efetuado! Por favor, verifique seu email para ativar a conta.')
-
+        alert('Registo efetuado! Por favor, verifica o teu email para ativar a conta.');
         this.name = ''
         this.email = ''
         this.password = ''
