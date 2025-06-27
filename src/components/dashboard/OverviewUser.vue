@@ -36,8 +36,8 @@ export default {
   },
   data() {
     return {
-      selectedDate: new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-      currentDate: new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+      selectedDate: new Date().toLocaleDateString('pt-PT', { weekday: 'short', month: 'short', day: 'numeric' }),
+      currentDate: new Date().toLocaleDateString('pt-PT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
       currentWeather: {
         temperature: null,
         condition: 'Desconhecido',

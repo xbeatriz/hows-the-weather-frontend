@@ -24,53 +24,71 @@ export default {
     }
   },
   methods: {
-async approvePost(post) {
-  const userStore = useUserStore();
+    async approvePost(post) {
+      const userStore = useUserStore();
 
-  try {
-    const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${post.community_id}/posts/${post.post_id}/approve`, {
-      method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${userStore.accessToken}`,
-      },
-    });
+      try {
+        const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${post.community_id}/posts/${post.post_id}/approve`, {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${userStore.accessToken}`,
+          },
+        });
 
-    const data = await res.json();
+        const data = await res.json();
 
-    if (!res.ok) {
-      alert(data.message || "Erro ao aprovar post.");
-      return;
-    }
+        if (!res.ok) {
+          alert(data.message || "Erro ao aprovar post.");
+          return;
+        }
 
-    alert(data.message || "Post aprovado com sucesso.");
-    this.$emit("refresh");
-  } catch (error) {
-    console.error("Erro ao aprovar post:", error);
-    alert("Erro ao aprovar post. Tente novamente.");
-  }
-},
+        alert(data.message || "Post aprovado com sucesso.");
+        this.$emit("refresh");
+      } catch (error) {
+        console.error("Erro ao aprovar post:", error);
+        alert("Erro ao aprovar post. Tente novamente.");
+      }
+    },
     async rejectPost(post) {
       const userStore = useUserStore();
-      await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${post.community_id}/posts/${post.post_id}/reject`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${userStore.accessToken}`,
-        },
-      });
-      this.$emit('refresh');
+
+      try {
+        const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${post.community_id}/posts/${post.post_id}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${userStore.accessToken}`,
+          },
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.message || "Erro ao rejeitar post.");
+          return;
+        }
+
+        alert(data.message || "Post rejeitado e removido com sucesso.");
+        this.$emit("refresh");
+      } catch (error) {
+        console.error("Erro ao rejeitar post:", error);
+        alert("Erro ao rejeitar post. Tente novamente.");
+      }
     }
+
   }
 };
 </script>
 
 <style scoped>
 .post-item {
-  background-color: #f9f9f9; /* fundo claro */
-  color: #222; /* texto escuro */
+  background-color: #f9f9f9;
+  /* fundo claro */
+  color: #222;
+  /* texto escuro */
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.5;
 }
@@ -80,7 +98,8 @@ async approvePost(post) {
 }
 
 .post-item strong {
-  color: #333; /* título em negrito mais escuro */
+  color: #333;
+  /* título em negrito mais escuro */
 }
 
 button {
@@ -98,12 +117,14 @@ button:hover {
 }
 
 button:first-of-type {
-  background-color: #4caf50; /* verde para aprovar */
+  background-color: #4caf50;
+  /* verde para aprovar */
   color: white;
 }
 
 button:last-of-type {
-  background-color: #f44336; /* vermelho para rejeitar */
+  background-color: #f44336;
+  /* vermelho para rejeitar */
   color: white;
 }
 </style>

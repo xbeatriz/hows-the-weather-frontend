@@ -21,7 +21,7 @@
       </div>
 
       <!-- Painel dinâmico -->
-      <component :is="currentComponent" :data="componentData" />
+      <component :is="currentComponent" :data="componentData" @refresh="loadComponentData" />
 
       <!-- Modais -->
       <Modal v-if="showCreateUser" title="Criar Novo Utilizador" @close="showCreateUser = false">
@@ -277,6 +277,38 @@ export default {
       this.showCreateCommunity = false;
       this.loadComponentData();
     },
+    async fetchPendingPosts() {
+      const token =
+        this.userStore.accessToken || localStorage.getItem("accessToken");
+      const refreshToken =
+        this.userStore.refreshToken || localStorage.getItem("refreshToken");
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "x-refresh-token": refreshToken,
+      };
+    const res = await fetch("https://hows-the-weather-backend.onrender.com/api/communities", {
+            headers,
+          })
+            .then((res) => {
+              if (!res.ok) throw new Error("Erro ao carregar posts pendentes");
+              return res.json();
+            })
+            .then((data) => {
+              const pendingPosts = [];
+              for (const community of data.data.communities || []) {
+                for (const post of community.community_posts || []) {
+                  if (post.status === "waiting") {
+                    pendingPosts.push({ ...post, community_id: community._id });
+                  }
+                }
+              }
+              this.componentData = { pendingPosts };
+            })
+            .catch(() => {
+              this.componentData = { pendingPosts: [] };
+            }); // tua rota para buscar os posts pendentes
+    this.data.pendingPosts = await res.json();
+  }
   },
   mounted() {
     this.loadComponentData();
