@@ -60,11 +60,12 @@
               🗑️ Eliminar post
             </button>
             <!-- Mostrar botão de like apenas se o user ainda não tiver dado like -->
-            <button v-if="!post.likes.includes(userId)" @click="likePost(post._id)" class="like-button">
+            <button v-if="!post.likes.includes(userId)" @click="likePost(post)" class="like-button">
               👍 Like
             </button>
-            <span v-else-if="post.user_id === userId"><br>Não podes dar like no teu post</span>
+            <span v-else-if="post.user_id === userId.value"><br>Não podes dar like no teu post</span>
             <span v-else class="text-gray-400"><br>Já deste like</span>
+
 
           </div>
         </div>
@@ -166,7 +167,13 @@ async function deletePost(postId) {
   }
 }
 
-async function likePost(postId) {
+async function likePost(post) {
+  const postId = post.post_id; // <-- Corrigido aqui
+
+  console.log('community_id enviado:', props.community._id);
+  console.log("postId:", postId);
+  console.log("userId:", userId.value);
+
   try {
     const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${props.community._id}/posts/${postId}`, {
       method: 'PATCH',

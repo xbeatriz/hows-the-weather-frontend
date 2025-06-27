@@ -78,10 +78,11 @@ export const useCommunityStore = defineStore('community', {
 async fetchPostsByCommunityId(communityId) {
       this.loading = true;
       this.error = null;
+      const userStore = useUserStore();
       try {
         const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${communityId}/posts`, {
           headers: {
-            Authorization: `Bearer ${this.accessToken}` // ou obtém o token de outro modo
+            Authorization: `Bearer ${userStore.accessToken}` // ou obtém o token de outro modo
           }
         });
         if (!res.ok) throw new Error('Erro ao buscar posts');
