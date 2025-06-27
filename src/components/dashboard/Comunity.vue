@@ -170,9 +170,7 @@ async function deletePost(postId) {
 async function likePost(post) {
   const postId = post.post_id; // <-- Corrigido aqui
 
-  console.log('community_id enviado:', props.community._id);
-  console.log("postId:", postId);
-  console.log("userId:", userId.value);
+
 
   try {
     const res = await fetch(`https://hows-the-weather-backend.onrender.com/api/communities/${props.community._id}/posts/${postId}`, {
