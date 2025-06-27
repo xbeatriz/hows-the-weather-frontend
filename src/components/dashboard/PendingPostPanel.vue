@@ -57,6 +57,7 @@ export default {
           method: 'DELETE',
           headers: {
             Authorization: `Bearer ${userStore.accessToken}`,
+        "x-refresh-token": userStore.refreshToken,
           },
         });
 
